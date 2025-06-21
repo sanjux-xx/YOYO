@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Product Finder</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --bg-color: #f5f7fa;
+      --text-color: #212529;
+      --card-bg: #ffffff;
+      --btn-buy-bg: #28a745;
+      --card-shadow: rgba(0, 0, 0, 0.1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #121212;
+        --text-color: #f1f1f1;
+        --card-bg: #1e1e1e;
+        --card-shadow: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      background-attachment: fixed;
+      background-size: cover;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    .search-bar {
+      max-width: 800px;
+      margin: 40px auto;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      color: var(--text-color);
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      border: none;
+      box-shadow: 0 4px 12px var(--card-shadow);
+      transition: transform 0.2s ease;
+    }
+
+    .card:hover {
+      transform: scale(1.03);
+    }
+
+    .card-img-top {
+      height: 200px;
+      object-fit: contain;
+      background-color: #fff;
+      padding: 1rem;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+    }
+
+    .card-title {
+      font-size: 1rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-height: 3em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .card-title.expanded {
+      white-space: normal;
+      max-height: 500px;
+    }
+
+    .btn-buy {
+      background-color: var(--btn-buy-bg);
+      border: none;
+      margin-top: auto;
+    }
+
+    .logo {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+
+    .form-section {
+      background: rgba(255, 255, 255, 0.85);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+  </style>
+</head>
+<body>
+  <!-- Background Logo -->
+  <div style="position: fixed; top: 0; left: 0; z-index: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.07;">
+    <img src="{{ url_for('static', filename='images/Logo.jpg') }}" style="width: 100%; height: 100%; object-fit: cover;">
+  </div>
+
+  <!-- Header -->
+  <div class="text-center py-4">
+    <a href="/" class="text-decoration-none">
+      <h1 class="text-primary mb-0">Across the Tags</h1>
+    </a>
+  </div>
+
+  <!-- Search Form -->
+  <div class="container search-bar form-section">
+    <form method="POST" action="/">
+      <div class="mb-3">
+        <input
+          type="text"
+          class="form-control"
+          name="product_query"
+          placeholder="Enter product name"
+          required
+        >
+      </div>
+
+      <div class="row mb-3">
+        <!-- Brand Filter -->
+        <div class="col-md-6 mb-3">
+          <select class="form-select" name="brand_filter">
+            <option value="">--Select Brand--</option>
+            <option value="aashirvaad">Aashirvaad</option>
+            <option value="fortune">Fortune</option>
+            <option value="tata">Tata Sampann</option>
+            <option value="daawat">Daawat</option>
+            <option value="india gate">India Gate</option>
+            <option value="patanjali">Patanjali</option>
+            <option value="kellogg">Kellogg's</option>
+            <option value="saffola">Saffola</option>
+            <option value="bagrry">Bagrry's</option>
+            <option value="nestle">Nestle</option>
+            <option value="britannia">Britannia</option>
+            <option value="parle">Parle</option>
+            <option value="amul">Amul</option>
+            <option value="mother dairy">Mother Dairy</option>
+            <option value="nandini">Nandini</option>
+            <option value="maggi">Maggi</option>
+            <option value="mtr">MTR</option>
+            <option value="haldiram">Haldiram's</option>
+            <option value="itc">ITC</option>
+            <option value="priya">Priya</option>
+            <option value="sunfeast">Sunfeast</option>
+          </select>
+        </div>
+
+        <!-- Weight Filter -->
+        <div class="col-md-6 mb-3">
+          <select class="form-select" name="weight_filter">
+            <option value="">--Select Weight--</option>
+            <option value="100g">100g</option>
+            <option value="200g">200g</option>
+            <option value="500g">500g</option>
+            <option value="750g">750g</option>
+            <option value="1kg">1kg</option>
+            <option value="1.5kg">1.5kg</option>
+            <option value="2kg">2kg</option>
+            <option value="5kg">5kg</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary w-100">Search</button>
+    </form>
+  </div>
+
+  <!-- Product Cards -->
+  <div class="container mt-5">
+    <div class="row">
+      {% for product in products %}
+      <div class="col-md-4 col-lg-3 mb-4 d-flex">
+        <div class="card w-100">
+          <img src="{{ product.image }}" class="card-img-top" alt="{{ product.title }}">
+          <div class="card-body">
+            <h5 class="card-title" onclick="this.classList.toggle('expanded')">{{ product.title }}</h5>
+            <p class="card-text text-success fw-bold">Price: {{ product.price }}</p>
+            <p class="card-text"><span class="badge bg-secondary">{{ product.store }}</span></p>
+            <a href="{{ product.link }}" target="_blank" class="btn btn-buy text-white w-100">Buy Now</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>
