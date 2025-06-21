@@ -34,6 +34,22 @@ def get_product_prices(query):
 
     products = []
     for item in results.get("shopping_results", []):
+        link = item.get("link", "")
+        if link and not link.startswith("http"):
+            link = "https://www.google.com" + link  # 👈 Add this fix
+
+        products.append({
+            "title": item.get("title", ""),
+            "price": item.get("price", ""),
+            "link": link,
+            "store": item.get("source", ""),
+            "image": item.get("thumbnail", "")
+        })
+
+    return products
+
+    products = []
+    for item in results.get("shopping_results", []):
         products.append({
             "title": item.get("title", ""),
             "price": item.get("price", ""),
