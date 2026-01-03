@@ -8,16 +8,7 @@
   <!-- Bootstrap -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
-  <!-- ================= CUSTOM CSS ================= -->
   <style>
-    :root {
-      --primary: #2563eb;
-      --accent: #16a34a;
-      --bg: #f5f7fa;
-      --card: #ffffff;
-      --border: #e5e7eb;
-    }
-
     body {
       background: linear-gradient(135deg, #e0f7fa, #ffffff);
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
@@ -40,121 +31,80 @@
     }
 
     /* header */
-    .site-title {
+    .site-header {
       position: relative;
       z-index: 1;
+      text-align: center;
+      padding: 30px 10px;
     }
 
-    /* search box */
-    .form-section {
-      background: rgba(255,255,255,0.9);
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    .site-header h1 {
+      color: #2563eb;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .site-header p {
+      color: #6b7280;
+      margin: 0;
+    }
+
+    /* home search */
+    .home-search {
       position: relative;
       z-index: 1;
+      max-width: 900px;
+      margin: 0 auto 50px;
     }
 
-    /* category section */
-    .category-section {
-      margin-top: 60px;
+    /* category cards (UNCHANGED) */
+    .category-card {
       position: relative;
-      z-index: 1;
+      display: block;
+      height: 260px;
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      text-decoration: none;
     }
 
-    .category-banner {
-      height: 140px;
-      border-radius: 14px;
-      background-size: cover;
-      background-position: center;
-      position: relative;
-      display: flex;
-      align-items: flex-end;
-      padding: 16px 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    .category-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
-    .category-banner::before {
+    .category-card::after {
       content: "";
       position: absolute;
       inset: 0;
       background: rgba(0,0,0,0.45);
-      border-radius: 14px;
     }
 
-    .category-banner h2 {
-      position: relative;
+    .category-card h3 {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
       color: #fff;
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 600;
+      z-index: 2;
       margin: 0;
     }
 
-    /* category images */
-    .banner-mobiles {
-      background-image: url("{{ url_for('static', filename='images/categories/phone.jpg') }}");
-    }
-
-    .banner-laptops {
-      background-image: url("{{ url_for('static', filename='images/categories/laptop.jpg') }}");
-    }
-
-    .banner-fruits {
-      background-image: url("{{ url_for('static', filename='images/categories/fruits.jpg') }}");
-    }
-
-    .banner-groceries {
-      background-image: url("{{ url_for('static', filename='images/categories/gro.jpg') }}");
-    }
-
-    /* category search */
-    .category-search {
-      max-width: 280px;
-      margin-left: auto;
-      margin-bottom: 20px;
-    }
-
-    /* product cards */
-    .product-row {
-      display: flex;
-      gap: 16px;
-      overflow-x: auto;
-      padding-bottom: 10px;
-    }
-
-    .product-card {
-      min-width: 200px;
-    }
-
-    .card {
-      border: none;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease;
-      height: 100%;
-    }
-
-    .card:hover {
-      transform: scale(1.03);
-    }
-
-    .card-img-top {
-      height: 150px;
-      object-fit: contain;
-      padding: 10px;
-      background: #fff;
-    }
-
-    .btn-track {
-      background: #f1f5f9;
-      border: none;
-      font-size: 14px;
+    .category-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.25);
     }
 
     @media (max-width: 768px) {
-      .category-search {
-        max-width: 100%;
+      .category-card {
+        height: 200px;
+      }
+
+      .category-card h3 {
+        font-size: 20px;
       }
     }
   </style>
@@ -168,96 +118,96 @@
 </div>
 
 <!-- HEADER -->
-<div class="text-center py-4 site-title">
-  <h1 class="text-primary mb-0">Across the Tags</h1>
-  <p class="text-muted">Compare prices. Save money.</p>
+<div class="site-header">
+  <h1>Across the Tags</h1>
+  <p>Compare prices. Save money.</p>
 </div>
 
-<!-- MAIN SEARCH -->
-<div class="container form-section mb-5">
-  <input type="text" class="form-control" placeholder="Search any product...">
+<!-- ✅ HOME SEARCH BAR -->
+<!-- HOME SEARCH FORM -->
+<div class="container home-search">
+  <form method="POST" action="/">
+    <input
+      type="text"
+      name="product_query"
+      class="form-control form-control-lg"
+      placeholder="Search products..."
+      required
+    >
+  </form>
 </div>
 
-<!-- ================= CATEGORY SECTIONS ================= -->
+<!-- 🔥 SEARCH RESULTS (OUTSIDE FORM) -->
+{% if products %}
+<div class="container mb-5 position-relative" style="z-index:1">
+  <h4 class="mb-3">Search Results</h4>
+  <div class="row g-4">
 
-<!-- MOBILES -->
-<div class="container category-section" data-category="mobiles">
-  <div class="category-banner banner-mobiles">
-    <h2>Mobiles</h2>
-  </div>
-
-  <input class="form-control category-search" placeholder="Search mobiles...">
-
-  <div class="product-row">
-    <div class="product-card" data-name="iphone">
-      <div class="card">
-        <img src="{{ url_for('static', filename='images/categories/mobiles.jpg') }}" class="card-img-top">
+    {% for product in products %}
+    <div class="col-md-3 col-sm-6">
+      <div class="card h-100 shadow-sm">
+        <img src="{{ product.image }}" class="card-img-top"
+             style="height:160px;object-fit:contain;padding:10px;">
         <div class="card-body">
-          <h6>iPhone</h6>
-          <p class="text-success fw-bold">From Amazon</p>
-          <button class="btn btn-track w-100">Track Price</button>
+          <h6>{{ product.title }}</h6>
+          <p class="text-success fw-bold">{{ product.price }}</p>
+          <small class="text-muted">{{ product.store }}</small>
         </div>
+
+        <!-- BUY LINK (SAFE) -->
+        <a href="{{ product.link }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="btn btn-success m-2">
+          Buy
+        </a>
       </div>
     </div>
+    {% endfor %}
 
-    <div class="product-card" data-name="samsung">
-      <div class="card">
-        <img src="{{ url_for('static', filename='images/categories/mobiles.jpg') }}" class="card-img-top">
-        <div class="card-body">
-          <h6>Samsung Galaxy</h6>
-          <p class="text-success fw-bold">Best Deal</p>
-          <button class="btn btn-track w-100">Track Price</button>
-        </div>
-      </div>
-    </div>
   </div>
 </div>
+{% endif %}
+<!-- ================= CATEGORY GRID (YOUR CODE) ================= -->
+<!-- ================= CATEGORY GRID ================= -->
+<div class="container mt-5 position-relative" style="z-index:1">
+  <div class="row g-4">
 
-<!-- FRUITS -->
-<div class="container category-section" data-category="fruits">
-  <div class="category-banner banner-fruits">
-    <h2>Fruits</h2>
-  </div>
-
-  <input class="form-control category-search" placeholder="Search fruits...">
-
-  <div class="product-row">
-    <div class="product-card" data-name="apple">
-      <div class="card">
-        <img src="{{ url_for('static', filename='images/categories/fruits.jpg') }}" class="card-img-top">
-        <div class="card-body">
-          <h6>Apple</h6>
-          <p class="text-success fw-bold">Lowest Price</p>
-          <button class="btn btn-track w-100">Track Price</button>
-        </div>
-      </div>
+    <!-- Mobiles -->
+    <div class="col-md-3 col-sm-6">
+      <a href="/category/mobiles" class="category-card">
+        <img src="{{ url_for('static', filename='images/categories/phone.jpg') }}" alt="Mobiles">
+        <h3>Mobiles</h3>
+      </a>
     </div>
 
-    <div class="product-card" data-name="banana">
-      <div class="card">
-        <img src="{{ url_for('static', filename='images/categories/fruits.jpg') }}" class="card-img-top">
-        <div class="card-body">
-          <h6>Banana</h6>
-          <p class="text-success fw-bold">Best Price</p>
-          <button class="btn btn-track w-100">Track Price</button>
-        </div>
-      </div>
+    <!-- Laptops -->
+    <div class="col-md-3 col-sm-6">
+      <a href="/category/laptops" class="category-card">
+        <img src="{{ url_for('static', filename='images/categories/laptop.jpg') }}" alt="Laptops">
+        <h3>Laptops</h3>
+      </a>
     </div>
+
+    <!-- Fruits -->
+    <div class="col-md-3 col-sm-6">
+      <a href="/category/fruits" class="category-card">
+        <img src="{{ url_for('static', filename='images/categories/fruits.jpg') }}" alt="Fruits">
+        <h3>Fruits</h3>
+      </a>
+    </div>
+
+    <!-- Groceries -->
+    <div class="col-md-3 col-sm-6">
+      <a href="/category/groceries" class="category-card">
+        <img src="{{ url_for('static', filename='images/categories/gro.jpg') }}" alt="Groceries">
+        <h3>Groceries</h3>
+      </a>
+    </div>
+
   </div>
 </div>
-
-<!-- ================= JS ================= -->
-<script>
-document.querySelectorAll(".category-search").forEach(input => {
-  input.addEventListener("input", function () {
-    const val = this.value.toLowerCase();
-    const section = this.closest(".category-section");
-    section.querySelectorAll(".product-card").forEach(card => {
-      card.style.display = card.dataset.name.includes(val) ? "block" : "none";
-    });
-  });
-});
-</script>
+<!-- ================= END CATEGORY GRID ================= -->
 
 </body>
 </html>
