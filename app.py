@@ -3,9 +3,22 @@ from serpapi import GoogleSearch
 import re
 import os
 
+# ✅ IMPORT FOOD BACKEND (Blueprint)
+from food_backend import food_bp
+
+# ===============================
+# CREATE FLASK APP FIRST
+# ===============================
 app = Flask(__name__)
 
-# ---------- HELPERS ----------
+# ===============================
+# REGISTER FOOD BLUEPRINT
+# ===============================
+app.register_blueprint(food_bp)
+
+# ===============================
+# HELPERS (SERP PRODUCT SEARCH)
+# ===============================
 
 def weight_in_title(title, weight):
     if not weight:
@@ -26,23 +39,20 @@ def get_product_prices(query):
         "location": "India",
         "hl": "en",
         "gl": "in",
-        "api_key": "e8de0bc4634c1ad9ebad6b60a681178b0b6ea9dd3bb6880156ca15cdc7b15c19"   # 🔴 put your key here
+        "api_key": "e8de0bc4634c1ad9ebad6b60a681178b0b6ea9dd3bb6880156ca15cdc7b15c19"
     }
 
     search = GoogleSearch(params)
     results = search.get_dict()
 
     products = []
-
     for item in results.get("shopping_results", []):
-        # Try all possible link locations
         link = (
             item.get("link")
             or item.get("product_link")
             or (item.get("offers", [{}])[0].get("link") if item.get("offers") else "")
         )
 
-        # Make relative links absolute
         if link and not link.startswith("http"):
             link = "https://www.google.com" + link
 
@@ -56,7 +66,9 @@ def get_product_prices(query):
 
     return products
 
-# ---------- HOME PAGE ----------
+# ===============================
+# HOME PAGE
+# ===============================
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -70,17 +82,17 @@ def index():
         query = " ".join([product, brand, weight]).strip()
 
         if query:
-            all_products = get_product_prices(query)
+            products = get_product_prices(query)
             if weight:
-                products = [p for p in all_products if weight_in_title(p["title"], weight)]
-            else:
-                products = all_products
+                products = [p for p in products if weight_in_title(p["title"], weight)]
 
             products = sorted(products, key=extract_price)
 
     return render_template("index.html", products=products)
 
-# ---------- CATEGORY PAGE ----------
+# ===============================
+# CATEGORY PAGE (NON-FOOD)
+# ===============================
 
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
@@ -104,7 +116,9 @@ def category_page(category_name):
 
     return render_template("category.html", category=category_name, products=products)
 
-# ---------- RUN ----------
+# ===============================
+# RUN SERVER
+# ===============================
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))

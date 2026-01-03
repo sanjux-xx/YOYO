@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Food Brands</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #e0f7fa, #ffffff);
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    .page-title {
+      text-align: center;
+      font-size: 30px;
+      font-weight: 700;
+      color: #2563eb;
+      margin: 30px 0;
+    }
+
+    /* Brand grid */
+    .food-brand-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+    }
+
+    .food-brand-card {
+      position: relative;
+      height: 220px;
+      border-radius: 18px;
+      overflow: hidden;
+      text-decoration: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .food-brand-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+    }
+
+    .food-brand-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .food-brand-card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.45);
+    }
+
+    .food-brand-card h3 {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      color: #fff;
+      font-size: 22px;
+      font-weight: 600;
+      margin: 0;
+      z-index: 2;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="page-title">Food Price Comparison</div>
+
+  <div class="food-brand-grid">
+
+    <a href="/food/mcdonalds" class="food-brand-card">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/McDonald%27s_logo.svg">
+  <h3>McDonald's</h3>
+</a>
+
+<a href="/food/pizzahut" class="food-brand-card">
+  <img src="https://logos-world.net/wp-content/uploads/2020/04/Pizza-Hut-Logo.png"
+     alt="Pizza Hut">
+  <h3>Pizza Hut</h3>
+</a>
+
+<a href="/food/dominos" class="food-brand-card">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Dominos_pizza_logo.svg">
+  <h3>Domino's</h3>
+</a>
+
+  </div>
+</div>
+
+</body>
+</html>
