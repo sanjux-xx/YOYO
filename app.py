@@ -7,6 +7,19 @@ import logging
 from collections import defaultdict
 
 # ===============================
+# SENTRY (LAYER 3 - MONITORING)
+# ===============================
+import sentry_sdk
+from sentry_sdk.integrations.flask import FlaskIntegration
+
+sentry_sdk.init(
+    dsn=os.getenv("SENTRY_DSN"),   # from Render env
+    integrations=[FlaskIntegration()],
+    traces_sample_rate=0.2,        # 20% performance sampling
+    send_default_pii=False
+)
+
+# ===============================
 # IMPORT FOOD BACKEND (Blueprint)
 # ===============================
 from food_backend import food_bp
@@ -48,7 +61,6 @@ def log_event(event, ip, meta=None, level="INFO"):
 # IP + RATE LIMIT HELPERS
 # ===============================
 def get_client_ip():
-    # Cloudflare-safe IP detection
     if request.headers.get("CF-Connecting-IP"):
         return request.headers.get("CF-Connecting-IP")
     if request.headers.get("X-Forwarded-For"):
@@ -129,7 +141,7 @@ def get_product_prices(query):
         "location": "India",
         "hl": "en",
         "gl": "in",
-        "api_key": os.getenv("SERPAPI_KEY")  # ✅ FROM RENDER ENV
+        "api_key": os.getenv("SERPAPI_KEY")  # from Render env
     }
 
     try:
@@ -152,7 +164,7 @@ def get_product_prices(query):
             products.append({
                 "title": item.get("title", ""),
                 "price": item.get("price", ""),
-                "rating": item.get("rating"),      # ⭐ Google Shopping rating
+                "rating": item.get("rating"),
                 "reviews": item.get("reviews"),
                 "link": link,
                 "store": item.get("source", ""),
@@ -164,7 +176,7 @@ def get_product_prices(query):
 
     except Exception as e:
         log_event("SERPAPI_ERROR", ip, {"error": str(e)}, "WARN")
-        return []
+        raise  # important: let Sentry capture this
 
 # ===============================
 # HOME PAGE
@@ -229,6 +241,12 @@ def health():
     return {"status": "ok"}
 
 # ===============================
+# ===============================
+# TEST SENTRY (TEMPORARY)
+# ===============================
+@app.route("/test-error")
+def test_error():
+    1 / 0
 # RUN SERVER
 # ===============================
 if __name__ == "__main__":
