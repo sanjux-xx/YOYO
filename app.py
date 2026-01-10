@@ -19,7 +19,6 @@ sentry_sdk.init(
     send_default_pii=False
 )
 
-sentry_sdk.capture_message("WIZARD FINAL TEST")
 
 # ===============================
 # IMPORT FOOD BACKEND (Blueprint)
@@ -243,12 +242,7 @@ def health():
     return {"status": "ok"}
 
 # ===============================
-# ===============================
-# TEST SENTRY (TEMPORARY)
-# ===============================
-@app.route("/test-error")
-def test_error():
-    1 / 0
+
 # RUN SERVER
 # ===============================
 if __name__ == "__main__":
