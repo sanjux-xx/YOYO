@@ -19,6 +19,8 @@ sentry_sdk.init(
     send_default_pii=False
 )
 
+sentry_sdk.capture_message("SENTRY CONNECTION TEST")
+
 # ===============================
 # IMPORT FOOD BACKEND (Blueprint)
 # ===============================
