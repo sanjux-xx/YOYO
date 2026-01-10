@@ -149,7 +149,7 @@ def get_product_prices(query):
         log_event("SERPAPI_CALL", ip, {"query": query})
 
         search = GoogleSearch(params)
-        results = search.get_dict(timeout=10)
+        results = search.get_dict()
 
         products = []
         for item in results.get("shopping_results", []):
