@@ -13,12 +13,11 @@ import sentry_sdk
 from sentry_sdk.integrations.flask import FlaskIntegration
 
 sentry_sdk.init(
-    dsn=os.getenv("SENTRY_DSN"),   # from Render env
+    dsn=os.getenv("SENTRY_DSN"),
     integrations=[FlaskIntegration()],
-    traces_sample_rate=0.2,        # 20% performance sampling
+    traces_sample_rate=0.2,
     send_default_pii=False
 )
-
 
 # ===============================
 # IMPORT FOOD BACKEND (Blueprint)
@@ -34,20 +33,24 @@ app.register_blueprint(food_bp)
 # ===============================
 # MINI SOC CONFIG (LAYER 2)
 # ===============================
-RATE_LIMIT = 10            # requests per window
-WINDOW_SIZE = 60           # seconds
-BLOCK_TIME = 15 * 60       # 15 minutes
-CACHE_TTL = 20 * 60        # 20 minutes
+RATE_LIMIT = 10
+WINDOW_SIZE = 60
+BLOCK_TIME = 15 * 60
+CACHE_TTL = 20 * 60
 
 request_log = defaultdict(list)
 blocked_ips = {}
 cache = {}
 
 # ===============================
-# SECURITY LOGGING (MINI SOC)
+# LAYER 4: QUERY ABUSE TRACKING (FIXED)
+# ===============================
+query_counter = defaultdict(list)
+
+# ===============================
+# LOGGING (RENDER SAFE)
 # ===============================
 logging.basicConfig(
-    filename="security.log",
     level=logging.INFO,
     format="%(asctime)s %(levelname)s %(message)s"
 )
@@ -65,20 +68,18 @@ def get_client_ip():
     if request.headers.get("CF-Connecting-IP"):
         return request.headers.get("CF-Connecting-IP")
     if request.headers.get("X-Forwarded-For"):
-        return request.headers.get("X-Forwarded-For").split(",")[0].strip()
+        return request.headers.get("X-Forwarded-For").split(",")[0]
     return request.remote_addr
 
 def is_rate_limited(ip):
     now = time.time()
 
-    # Temporary block check
     if ip in blocked_ips:
         if now < blocked_ips[ip]:
             return True
         else:
             del blocked_ips[ip]
 
-    # Clean old timestamps
     request_log[ip] = [t for t in request_log[ip] if now - t < WINDOW_SIZE]
 
     if len(request_log[ip]) >= RATE_LIMIT:
@@ -90,17 +91,37 @@ def is_rate_limited(ip):
     return False
 
 # ===============================
-# INPUT VALIDATION
+# LAYER 4: STRICT INPUT VALIDATION
 # ===============================
 def is_valid_query(q):
-    if not q or len(q) < 3 or len(q) > 100:
+    if not q:
         return False
-    if "<script" in q.lower():
+
+    q = q.strip()
+
+    if len(q) < 3 or len(q) > 100:
         return False
+
+    blocked_patterns = [
+        "<script",
+        "\"",
+        ";",
+        "--",
+        "/*",
+        "*/",
+        " or ",
+        " and "
+    ]
+
+    lower_q = q.lower()
+    for b in blocked_patterns:
+        if b in lower_q:
+            return False
+
     return True
 
 # ===============================
-# HELPERS (PRODUCT FILTERING)
+# HELPERS
 # ===============================
 def weight_in_title(title, weight):
     if not weight:
@@ -116,20 +137,31 @@ def extract_price(product):
         return float("inf")
 
 # ===============================
+# LAYER 4: QUERY ABUSE PROTECTION (FIXED)
+# ===============================
+def is_query_abused(query):
+    now = time.time()
+    query_counter[query] = [t for t in query_counter[query] if now - t < 3600]
+    query_counter[query].append(now)
+    return len(query_counter[query]) > 20
+
+# ===============================
 # SERPAPI FETCH (PROTECTED)
 # ===============================
 def get_product_prices(query):
     ip = get_client_ip()
 
-    # Rate limit before API call
     if is_rate_limited(ip):
         log_event("RATE_LIMIT_HIT", ip, {"query": query})
         return []
 
-    now = time.time()
-    cache_key = f"search:{query.lower()}"
+    if is_query_abused(query):
+        log_event("QUERY_ABUSE", ip, {"query": query})
+        return []
 
-    # Cache check
+    now = time.time()
+    cache_key = f"search:{query.lower().strip()}"
+
     if cache_key in cache:
         data, ts = cache[cache_key]
         if now - ts < CACHE_TTL:
@@ -142,12 +174,11 @@ def get_product_prices(query):
         "location": "India",
         "hl": "en",
         "gl": "in",
-        "api_key": os.getenv("SERPAPI_KEY")  # from Render env
+        "api_key": os.getenv("SERPAPI_KEY")
     }
 
     try:
         log_event("SERPAPI_CALL", ip, {"query": query})
-
         search = GoogleSearch(params)
         results = search.get_dict()
 
@@ -177,10 +208,11 @@ def get_product_prices(query):
 
     except Exception as e:
         log_event("SERPAPI_ERROR", ip, {"error": str(e)}, "WARN")
-        raise  # important: let Sentry capture this
+        sentry_sdk.capture_exception(e)
+        return []
 
 # ===============================
-# HOME PAGE
+# ROUTES
 # ===============================
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -195,19 +227,14 @@ def index():
 
         if is_valid_query(query):
             products = get_product_prices(query)
-
             if weight:
                 products = [p for p in products if weight_in_title(p["title"], weight)]
-
             products = sorted(products, key=extract_price)
         else:
             log_event("INVALID_QUERY", get_client_ip(), {"query": query})
 
     return render_template("index.html", products=products)
 
-# ===============================
-# CATEGORY PAGE
-# ===============================
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
     category_map = {
@@ -234,15 +261,36 @@ def category_page(category_name):
 
     return render_template("category.html", category=category_name, products=products)
 
-# ===============================
-# HEALTH CHECK
-# ===============================
 @app.route("/health")
 def health():
     return {"status": "ok"}
 
 # ===============================
+# LAYER 4: SECURE HEADERS (MODERN)
+# ===============================
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["Referrer-Policy"] = "no-referrer"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "img-src https: data:; "
+        "style-src 'self' 'unsafe-inline'"
+    )
+    return response
 
+# ===============================
+# LAYER 4: GLOBAL ERROR HANDLER
+# ===============================
+@app.errorhandler(Exception)
+def handle_all_errors(e):
+    ip = get_client_ip()
+    log_event("UNHANDLED_EXCEPTION", ip, {"error": str(e)}, "WARN")
+    sentry_sdk.capture_exception(e)
+    return render_template("error.html"), 500
+
+# ===============================
 # RUN SERVER
 # ===============================
 if __name__ == "__main__":
