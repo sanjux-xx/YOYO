@@ -43,7 +43,7 @@ blocked_ips = {}
 cache = {}
 
 # ===============================
-# LAYER 4: QUERY ABUSE TRACKING (FIXED)
+# LAYER 4: QUERY ABUSE TRACKING 
 # ===============================
 query_counter = defaultdict(list)
 
@@ -137,7 +137,7 @@ def extract_price(product):
         return float("inf")
 
 # ===============================
-# LAYER 4: QUERY ABUSE PROTECTION (FIXED)
+# LAYER 4: QUERY ABUSE PROTECTION
 # ===============================
 def is_query_abused(query):
     now = time.time()

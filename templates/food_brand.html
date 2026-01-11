@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{{ brand_name }}</title>
+  <title>{{ brand_name }} Menu | Across the Tags</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <link
@@ -16,6 +16,7 @@
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
     }
 
+    /* Menu item card */
     .menu-item {
       display: block;
       padding: 14px 18px;
@@ -28,12 +29,24 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.08);
       transition: all 0.2s ease;
       cursor: pointer;
+      word-break: break-word;
     }
 
     .menu-item:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 22px rgba(0,0,0,0.15);
       color: #0d6efd;
+    }
+
+    /* Keyboard accessibility */
+    .menu-item:focus {
+      outline: 2px solid #0d6efd;
+      outline-offset: 2px;
+    }
+
+    /* Prevent long category names breaking layout */
+    h4 {
+      word-break: break-word;
     }
   </style>
 </head>
@@ -43,7 +56,13 @@
 <div class="container py-4">
 
   <!-- Back button -->
-  <a href="/food" class="btn btn-link mb-3">← Back to Food</a>
+  <a
+    href="/food"
+    class="btn btn-link mb-3"
+    aria-label="Back to food page"
+  >
+    ← Back to Food
+  </a>
 
   <!-- Brand title -->
   <h2 class="mb-4">{{ brand_name }} Menu</h2>
@@ -55,15 +74,15 @@
 
       {% for item in items %}
         <a
-  href="{{ url_for(
-    'food.food_item_page',
-    brand=brand_key,
-    item_slug=item|lower|replace(' ', '-')
-  ) }}"
-  class="menu-item"
->
-  {{ item }}
-</a>
+          href="{{ url_for(
+            'food.food_item_page',
+            brand=brand_key,
+            item_slug=item|lower|replace(' ', '-')
+          ) }}"
+          class="menu-item"
+        >
+          {{ item }}
+        </a>
       {% endfor %}
     </div>
   {% endfor %}

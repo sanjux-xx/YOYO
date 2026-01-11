@@ -2,10 +2,21 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>{{ item_name }} Price Comparison</title>
+  <title>
+    {{ item_name }} Price Comparison in {{ city|capitalize }} | Across the Tags
+  </title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta
+    name="description"
+    content="Compare {{ item_name }} prices across multiple platforms in {{ city|capitalize }}."
+  >
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
 
   <style>
     body {
@@ -30,6 +41,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 10px;
     }
 
     .platform {
@@ -40,74 +52,159 @@
       font-size: 20px;
       font-weight: 700;
       color: #16a34a;
+      white-space: nowrap;
+    }
+
+    .price.na {
+      color: #6c757d;
+      font-weight: 600;
+    }
+
+    @media (max-width: 576px) {
+      .compare-card {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="container py-3">
 
-  <a href="/food/{{ brand }}" class="btn btn-link mt-3">← Back to Menu</a>
+  <!-- Back -->
+  <a
+    href="/food/{{ brand }}"
+    class="btn btn-link mb-3"
+    aria-label="Back to brand menu"
+  >
+    ← Back to Menu
+  </a>
 
+  <!-- CITY SELECTION -->
   <form method="get" class="text-center mb-4">
 
-    <!-- KEEP CONTEXT -->
+    <!-- Preserve context -->
     <input type="hidden" name="brand" value="{{ brand }}">
     <input type="hidden" name="item" value="{{ item_name }}">
 
-    <label class="me-2 fw-semibold">Select City:</label>
+    <label
+      for="city"
+      id="city-label"
+      class="me-2 fw-semibold"
+    >
+      Select City:
+    </label>
 
-    <select name="city"
-            onchange="this.form.submit()"
-            class="form-select d-inline-block w-auto">
-      <option value="bangalore" {% if city == 'bangalore' %}selected{% endif %}>Bangalore</option>
-      <option value="mumbai" {% if city == 'mumbai' %}selected{% endif %}>Mumbai</option>
-      <option value="delhi" {% if city == 'delhi' %}selected{% endif %}>Delhi</option>
+    <select
+      id="city"
+      name="city"
+      aria-labelledby="city-label"
+      class="form-select d-inline-block w-auto"
+    >
+      <option value="bangalore" {% if city == 'bangalore' %}selected{% endif %}>
+        Bangalore
+      </option>
+      <option value="mumbai" {% if city == 'mumbai' %}selected{% endif %}>
+        Mumbai
+      </option>
+      <option value="delhi" {% if city == 'delhi' %}selected{% endif %}>
+        Delhi
+      </option>
     </select>
+
+    <button class="btn btn-outline-primary btn-sm ms-2">
+      Update
+    </button>
   </form>
 
+  <!-- ITEM TITLE -->
   <div class="item-title">{{ item_name }}</div>
 
   <!-- OFFICIAL -->
   <div class="compare-card">
     <div class="platform">Official Site</div>
-    <div class="price">₹{{ prices.official }}</div>
-    <a href="{{ buy_links.official }}"
-       target="_blank"
-       class="btn btn-success btn-sm">
-      Buy
-    </a>
+
+    {% if prices.official %}
+      <div class="price">₹{{ prices.official }}</div>
+    {% else %}
+      <div class="price na">N/A</div>
+    {% endif %}
+
+    {% if buy_links.official %}
+      <a
+        href="{{ buy_links.official }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-success btn-sm"
+      >
+        Buy
+      </a>
+    {% else %}
+      <button class="btn btn-secondary btn-sm" disabled aria-disabled="true">
+        Unavailable
+      </button>
+    {% endif %}
   </div>
 
   <!-- SWIGGY -->
   <div class="compare-card">
     <div class="platform">Swiggy</div>
-    <div class="price">₹{{ prices.swiggy }}</div>
-    <a href="{{ buy_links.swiggy }}"
-       target="_blank"
-       class="btn btn-warning btn-sm">
-      Buy
-    </a>
+
+    {% if prices.swiggy %}
+      <div class="price">₹{{ prices.swiggy }}</div>
+    {% else %}
+      <div class="price na">N/A</div>
+    {% endif %}
+
+    {% if buy_links.swiggy %}
+      <a
+        href="{{ buy_links.swiggy }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-warning btn-sm"
+      >
+        Buy
+      </a>
+    {% else %}
+      <button class="btn btn-secondary btn-sm" disabled aria-disabled="true">
+        Unavailable
+      </button>
+    {% endif %}
   </div>
 
   <!-- ZOMATO -->
   <div class="compare-card">
     <div class="platform">Zomato</div>
-    <div class="price">₹{{ prices.zomato }}</div>
-    <a href="{{ buy_links.zomato }}"
-       target="_blank"
-       class="btn btn-danger btn-sm">
-      Buy
-    </a>
+
+    {% if prices.zomato %}
+      <div class="price">₹{{ prices.zomato }}</div>
+    {% else %}
+      <div class="price na">N/A</div>
+    {% endif %}
+
+    {% if buy_links.zomato %}
+      <a
+        href="{{ buy_links.zomato }}"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="btn btn-danger btn-sm"
+      >
+        Buy
+      </a>
+    {% else %}
+      <button class="btn btn-secondary btn-sm" disabled aria-disabled="true">
+        Unavailable
+      </button>
+    {% endif %}
   </div>
 
   <p class="text-center mt-3 text-muted">
-    Prices may vary by location. Last updated just now.
+    Prices may vary by location. Availability depends on platform coverage.
   </p>
 
 </div>
-
 
 </body>
 </html>

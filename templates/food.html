@@ -2,10 +2,18 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Food Brands</title>
+  <title>Food Price Comparison | Across the Tags</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <meta
+    name="description"
+    content="Compare food prices across popular brands like McDonald's, Pizza Hut, and Domino's."
+  >
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
 
   <style>
     body {
@@ -37,6 +45,7 @@
       text-decoration: none;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: block;
     }
 
     .food-brand-card:hover {
@@ -44,10 +53,17 @@
       box-shadow: 0 14px 40px rgba(0,0,0,0.25);
     }
 
+    /* Keyboard accessibility */
+    .food-brand-card:focus-visible {
+      outline: 3px solid #2563eb;
+      outline-offset: 3px;
+    }
+
     .food-brand-card img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #ffffff;
     }
 
     .food-brand-card::after {
@@ -72,28 +88,57 @@
 
 <body>
 
-<div class="container">
+<div class="container py-4">
+
+  <!-- Back to Home -->
+  <a
+    href="/"
+    class="btn btn-link mb-3"
+    aria-label="Back to home page"
+  >
+    ← Back to Home
+  </a>
+
   <div class="page-title">Food Price Comparison</div>
 
-  <div class="food-brand-grid">
+  <!-- Brand Grid -->
+  <section
+    class="food-brand-grid"
+    aria-label="Food brands"
+  >
 
+    <!-- McDonald's -->
     <a href="/food/mcdonalds" class="food-brand-card">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/McDonald%27s_logo.svg">
-  <h3>McDonald's</h3>
-</a>
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/4/4b/McDonald%27s_logo.svg"
+        alt="McDonald's"
+        loading="lazy"
+      >
+      <h3>McDonald's</h3>
+    </a>
 
-<a href="/food/pizzahut" class="food-brand-card">
-  <img src="{{ url_for('static', filename='images/food/pizza.jpg') }}"
-       alt="Pizza Hut">
-  <h3>Pizza Hut</h3>
-</a>
+    <!-- Pizza Hut -->
+    <a href="/food/pizzahut" class="food-brand-card">
+      <img
+        src="{{ url_for('static', filename='images/food/pizza.jpg') }}"
+        alt="Pizza Hut"
+        loading="lazy"
+      >
+      <h3>Pizza Hut</h3>
+    </a>
 
-<a href="/food/dominos" class="food-brand-card">
-  <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Dominos_pizza_logo.svg">
-  <h3>Domino's</h3>
-</a>
+    <!-- Domino's -->
+    <a href="/food/dominos" class="food-brand-card">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/7/74/Dominos_pizza_logo.svg"
+        alt="Domino's Pizza"
+        loading="lazy"
+      >
+      <h3>Domino's</h3>
+    </a>
 
-  </div>
+  </section>
+
 </div>
 
 </body>
