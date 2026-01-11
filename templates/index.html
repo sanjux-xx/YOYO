@@ -157,10 +157,14 @@
           <small class="text-muted">{{ product.store }}</small>
         </div>
 
-        <a href="{{ product.link }}" target="_blank"
-           class="btn btn-success m-2">
-          Buy
-        </a>
+        <a
+  href="{{ product.link if product.link and product.link.startswith('http') else 'https://www.google.com/search?q=' ~ product.title|urlencode }}"
+  target="_blank"
+  rel="noopener noreferrer"
+  class="btn btn-success m-2"
+>
+  Buy
+</a>
 
       </div>
     </div>
