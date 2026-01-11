@@ -149,6 +149,7 @@
 </div>
 
 <!-- SEARCH RESULTS -->
+<!-- SEARCH RESULTS -->
 {% if products %}
 <div class="container mb-5 position-relative" style="z-index:1">
   <h4 class="mb-3">Search Results</h4>
@@ -173,6 +174,12 @@
 </div>
 {% endif %}
 
+<!-- NO RESULTS (ONLY AFTER SEARCH) -->
+{% if request.method == 'POST' and products is not none and products|length == 0 %}
+<p class="text-center text-muted mt-4">
+  No results found. Try a different keyword.
+</p>
+{% endif %}
 <!-- ✅ SHOW ONLY AFTER SEARCH -->
 {% if request.method == 'POST' and products|length == 0 %}
 <p class="text-center text-muted mt-4">
