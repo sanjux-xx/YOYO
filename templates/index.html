@@ -50,7 +50,6 @@
       margin: 0;
     }
 
-    /* SEARCH */
     .home-search {
       position: relative;
       z-index: 1;
@@ -58,7 +57,6 @@
       margin: 20px auto 50px;
     }
 
-    /* CATEGORY CARDS */
     .category-card {
       position: relative;
       display: block;
@@ -94,11 +92,6 @@
       margin: 0;
     }
 
-    .category-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 14px 40px rgba(0,0,0,0.25);
-    }
-
     .category-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -112,13 +105,6 @@
     @media (min-width: 1200px) {
       .category-grid { grid-template-columns: repeat(4, 1fr); }
     }
-
-    .card h6 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
   </style>
 </head>
 
@@ -128,36 +114,28 @@
   <img src="{{ url_for('static', filename='images/Logo.jpg') }}" alt="">
 </div>
 
-<!-- HEADER -->
 <div class="site-header">
   <h1>Across the Tags</h1>
   <p>Compare prices. Save money.</p>
 </div>
 
-<!-- ✅ CENTERED SEARCH -->
 <div class="home-search">
   <form method="POST" action="/" class="d-flex gap-2">
-    <input
-      type="text"
-      name="product_query"
-      class="form-control form-control-lg"
-      placeholder="Search products..."
-      required
-    >
+    <input type="text" name="product_query"
+           class="form-control form-control-lg"
+           placeholder="Search products..." required>
     <button class="btn btn-primary btn-lg px-4">Search</button>
   </form>
 </div>
 
-<!-- SEARCH RESULTS -->
-<!-- SEARCH RESULTS -->
 {% if products %}
-<div class="container mb-5 position-relative" style="z-index:1">
+<div class="container mb-5">
   <h4 class="mb-3">Search Results</h4>
   <div class="row g-4">
     {% for product in products %}
     <div class="col-md-3 col-sm-6">
       <div class="card h-100 shadow-sm">
-        <img src="{{ product.image or url_for('static','images/no-image.png') }}"
+        <img src="{{ product.image or url_for('static', filename='images/no-image.png') }}"
              class="card-img-top"
              style="height:160px;object-fit:contain;padding:10px;">
         <div class="card-body">
@@ -174,40 +152,32 @@
 </div>
 {% endif %}
 
-<!-- NO RESULTS (ONLY AFTER SEARCH) -->
 {% if request.method == 'POST' and products is not none and products|length == 0 %}
 <p class="text-center text-muted mt-4">
   No results found. Try a different keyword.
 </p>
 {% endif %}
-<!-- ✅ SHOW ONLY AFTER SEARCH -->
-{% if request.method == 'POST' and products|length == 0 %}
-<p class="text-center text-muted mt-4">
-  No results found. Try a different keyword.
-</p>
-{% endif %}
 
-<!-- CATEGORY GRID -->
-<div class="container-fluid mt-5 px-lg-5 position-relative" style="z-index:1">
+<div class="container-fluid mt-5 px-lg-5">
   <div class="category-grid">
     <a href="/category/mobiles" class="category-card">
-      <img src="{{ url_for('static','images/categories/phone.jpg') }}">
+      <img src="{{ url_for('static', filename='images/categories/phone.jpg') }}">
       <h3>Mobiles</h3>
     </a>
     <a href="/category/laptops" class="category-card">
-      <img src="{{ url_for('static','images/categories/laptop.jpg') }}">
+      <img src="{{ url_for('static', filename='images/categories/laptop.jpg') }}">
       <h3>Laptops</h3>
     </a>
     <a href="/category/fruits" class="category-card">
-      <img src="{{ url_for('static','images/categories/fruits.jpg') }}">
+      <img src="{{ url_for('static', filename='images/categories/fruits.jpg') }}">
       <h3>Fruits</h3>
     </a>
     <a href="/category/groceries" class="category-card">
-      <img src="{{ url_for('static','images/categories/gro.jpg') }}">
+      <img src="{{ url_for('static', filename='images/categories/gro.jpg') }}">
       <h3>Groceries</h3>
     </a>
     <a href="/food" class="category-card">
-      <img src="{{ url_for('static','images/categories/food.jpg') }}">
+      <img src="{{ url_for('static', filename='images/categories/food.jpg') }}">
       <h3>Food</h3>
     </a>
   </div>

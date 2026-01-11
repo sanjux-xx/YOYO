@@ -183,7 +183,7 @@ def get_product_prices(query):
 # ===============================
 @app.route("/", methods=["GET", "POST"])
 def index():
-    products = None  
+    products = None
 
     if request.method == "POST":
         query = request.form.get("product_query", "").strip()
@@ -195,7 +195,7 @@ def index():
 
     return render_template("index.html", products=products)
 
-@app.route("/category/<category_name>", methods=["GET", "POST"])
+@app.route("/category/<category_name>")
 def category_page(category_name):
     category_map = {
         "mobiles": "mobile phone",
@@ -232,7 +232,7 @@ def add_security_headers(response):
     return response
 
 # ===============================
-# SAFE ERROR HANDLER 
+# SAFE ERROR HANDLER
 # ===============================
 @app.errorhandler(Exception)
 def handle_all_errors(e):
