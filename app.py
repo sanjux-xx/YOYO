@@ -216,7 +216,7 @@ def get_product_prices(query):
 # ===============================
 @app.route("/", methods=["GET", "POST"])
 def index():
-    products = []
+    products = None 
 
     if request.method == "POST":
         product = request.form.get("product_query", "").strip()
@@ -227,10 +227,16 @@ def index():
 
         if is_valid_query(query):
             products = get_product_prices(query)
+
             if weight:
-                products = [p for p in products if weight_in_title(p["title"], weight)]
+                products = [
+                    p for p in products
+                    if weight_in_title(p["title"], weight)
+                ]
+
             products = sorted(products, key=extract_price)
         else:
+            products = []
             log_event("INVALID_QUERY", get_client_ip(), {"query": query})
 
     return render_template("index.html", products=products)
