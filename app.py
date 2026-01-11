@@ -162,11 +162,23 @@ def get_product_prices(query):
         products = []
 
         for item in results.get("shopping_results", []):
+
+         
+            link = (
+                item.get("link")
+                or item.get("product_link")
+                or (item.get("offers", [{}])[0].get("link") if item.get("offers") else "")
+            )
+
+            
+            if link and link.startswith("/"):
+                link = "https://www.google.com" + link
+
             products.append({
                 "title": item.get("title", ""),
                 "price": item.get("price", ""),
                 "rating": item.get("rating"),
-                "link": item.get("link", ""),
+                "link": link,
                 "store": item.get("source", ""),
                 "image": item.get("thumbnail", "")
             })
@@ -177,7 +189,6 @@ def get_product_prices(query):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         return []
-
 # ===============================
 # ROUTES
 # ===============================
