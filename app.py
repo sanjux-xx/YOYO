@@ -137,12 +137,14 @@ def is_query_abused(query):
 def get_product_prices(query):
     ip = get_client_ip()
 
+    # Rate-limit & abuse protection
     if is_rate_limited(ip) or is_query_abused(query):
         return []
 
     cache_key = f"search:{query.lower().strip()}"
     now = time.time()
 
+    # Cache hit
     if cache_key in cache:
         data, ts = cache[cache_key]
         if now - ts < CACHE_TTL:
@@ -163,26 +165,40 @@ def get_product_prices(query):
 
         for item in results.get("shopping_results", []):
 
-         
+          
             link = (
                 item.get("link")
                 or item.get("product_link")
-                or (item.get("offers", [{}])[0].get("link") if item.get("offers") else "")
+                or (
+                    item.get("offers", [{}])[0].get("link")
+                    if item.get("offers")
+                    else ""
+                )
             )
 
-            
+           
             if link and link.startswith("/"):
                 link = "https://www.google.com" + link
 
+            
+            if not link or not link.startswith("http"):
+                title = item.get("title", "")
+                link = (
+                    "https://www.google.com/search?q="
+                    + re.sub(r"\s+", "+", title)
+                )
+
+            # Product object
             products.append({
                 "title": item.get("title", ""),
                 "price": item.get("price", ""),
                 "rating": item.get("rating"),
-                "link": link,
                 "store": item.get("source", ""),
-                "image": item.get("thumbnail", "")
+                "image": item.get("thumbnail", ""),
+                "link": link
             })
 
+        # Save to cache
         cache[cache_key] = (products, now)
         return products
 
