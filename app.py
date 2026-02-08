@@ -232,13 +232,12 @@ def category_page(category_name):
         "groceries": "grocery food items"
     }
 
-    
     if category_name not in category_rules:
         return render_template("category.html", category=category_name, products=[])
 
     base_query = category_rules[category_name]
 
-    
+ 
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
         final_query = f"{search_term} {base_query}".strip()
@@ -252,7 +251,7 @@ def category_page(category_name):
     for p in products:
         title = p.get("title", "").lower()
 
-      
+       
         if category_name == "mobiles":
             mobile_words = [
                 "mobile", "phone", "smartphone", "iphone", "samsung",
@@ -262,6 +261,7 @@ def category_page(category_name):
             if any(word in title for word in mobile_words):
                 filtered.append(p)
 
+     
         elif category_name == "laptops":
             laptop_words = [
                 "laptop", "notebook", "macbook", "chromebook",
@@ -273,26 +273,26 @@ def category_page(category_name):
        
         elif category_name == "fruits":
 
-            fruit_words = [
-                "fruit", "fruits", "fresh", "organic",
-                "apple", "banana", "mango", "orange", "grapes",
-                "pineapple", "papaya", "kiwi", "pear",
-                "pomegranate", "watermelon", "avocado", "guava",
-                "strawberry", "blueberry", "dragon fruit"
-            ]
-
-            non_edible_words = [
+            
+            blocked_words = [
                 "oil", "cream", "lotion", "shampoo", "soap",
                 "face wash", "hair", "serum", "butter",
                 "cosmetic", "skin", "gel", "mask",
                 "phone", "mobile", "case", "cover"
             ]
 
-            if any(word in title for word in fruit_words) \
-               and not any(bad in title for bad in non_edible_words):
+            
+            if request.method == "POST":
+                search_term = request.form.get("search", "").lower()
+                if search_term and search_term in title:
+                    if not any(bad in title for bad in blocked_words):
+                        filtered.append(p)
+                    continue
+
+           
+            if not any(bad in title for bad in blocked_words):
                 filtered.append(p)
 
-       
         elif category_name == "groceries":
             grocery_words = [
                 "rice", "atta", "flour", "oil", "dal",
