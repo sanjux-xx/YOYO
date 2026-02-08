@@ -226,83 +226,73 @@ def index():
 def category_page(category_name):
 
     category_rules = {
-        "mobiles": {
-            "query": "mobile phone smartphone",
-            "keywords": [
-                "mobile", "phone", "smartphone",
-                "iphone", "samsung", "redmi", "realme",
-                "oneplus", "vivo", "oppo",
-                "case", "cover", "charger", "cable", "screen protector"
-            ]
-        },
-        "laptops": {
-            "query": "laptop computer notebook",
-            "keywords": [
-                "laptop", "notebook", "macbook",
-                "hp", "dell", "lenovo", "asus", "acer",
-                "charger", "keyboard", "mouse", "bag"
-            ]
-        },
-        "fruits": {
-            "query": "fresh fruits",
-            "keywords": [
-                "fruit", "apple", "banana", "mango",
-                "orange", "grapes", "pineapple", "papaya",
-                "watermelon", "kiwi", "pear"
-            ]
-        },
-        "groceries": {
-            "query": "grocery food items",
-            "keywords": [
-                "rice", "atta", "flour", "oil",
-                "dal", "salt", "sugar", "grocery",
-                "spices", "tea", "coffee"
-            ]
-        }
-    }
-
-    
-    category_exclusions = {
-        "mobiles": ["fruit", "banana", "mango", "apple fruit", "orange", "grapes"],
-        "laptops": ["fruit", "banana", "mango", "grocery", "vegetable"],
-        "fruits": ["iphone", "samsung", "mobile", "laptop", "charger", "electronics", "monitor"],
-        "groceries": ["iphone", "laptop", "mobile", "electronics", "smartphone"]
+        "mobiles": "mobile phone smartphone",
+        "laptops": "laptop computer notebook",
+        "fruits": "fresh fruits",
+        "groceries": "grocery food items"
     }
 
     
     if category_name not in category_rules:
         return render_template("category.html", category=category_name, products=[])
 
-    rule = category_rules[category_name]
+    base_query = category_rules[category_name]
 
-    
+  
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
-        final_query = f"{search_term} {rule['query']}".strip()
+        final_query = f"{search_term} {base_query}".strip()
     else:
-        final_query = rule["query"]
+        final_query = base_query
 
     products = get_product_prices(final_query)
 
-   
+
     filtered = []
     for p in products:
         title = p.get("title", "").lower()
 
-        if any(k in title for k in rule["keywords"]) and not any(
-            bad in title for bad in category_exclusions.get(category_name, [])
-        ):
-            filtered.append(p)
+       
+        if category_name == "mobiles":
+            if any(word in title for word in [
+                "mobile", "phone", "smartphone",
+                "iphone", "samsung", "redmi", "realme",
+                "oneplus", "vivo", "oppo", "charger",
+                "case", "cover", "cable", "screen protector"
+            ]):
+                filtered.append(p)
 
-    
+       
+        elif category_name == "laptops":
+            if any(word in title for word in [
+                "laptop", "notebook", "macbook",
+                "dell", "hp", "lenovo", "asus", "acer"
+            ]):
+                filtered.append(p)
+
+       
+        elif category_name == "fruits":
+            if any(word in title for word in [
+                "banana", "mango", "orange", "grapes",
+                "pineapple", "papaya", "watermelon", "kiwi", "pear"
+            ]) or ("apple" in title and "iphone" not in title and "ipad" not in title):
+                filtered.append(p)
+
+       
+        elif category_name == "groceries":
+            if any(word in title for word in [
+                "rice", "atta", "flour", "dal",
+                "oil", "salt", "sugar", "spices",
+                "tea", "coffee"
+            ]):
+                filtered.append(p)
+
+  
     if not filtered:
-        fallback_products = get_product_prices(rule["query"])
+        fallback_products = get_product_prices(base_query)
         for p in fallback_products:
             title = p.get("title", "").lower()
-
-            if any(k in title for k in rule["keywords"]) and not any(
-                bad in title for bad in category_exclusions.get(category_name, [])
-            ):
+            if category_name in title:
                 filtered.append(p)
 
     products = sorted(filtered, key=extract_price)
