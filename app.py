@@ -231,6 +231,7 @@ def category_page(category_name):
             "keywords": [
                 "mobile", "phone", "smartphone",
                 "iphone", "samsung", "redmi", "realme",
+                "oneplus", "vivo", "oppo",
                 "case", "cover", "charger", "cable", "screen protector"
             ]
         },
@@ -238,6 +239,7 @@ def category_page(category_name):
             "query": "laptop computer notebook",
             "keywords": [
                 "laptop", "notebook", "macbook",
+                "hp", "dell", "lenovo", "asus", "acer",
                 "charger", "keyboard", "mouse", "bag"
             ]
         },
@@ -245,24 +247,35 @@ def category_page(category_name):
             "query": "fresh fruits",
             "keywords": [
                 "fruit", "apple", "banana", "mango",
-                "orange", "grapes", "pineapple", "papaya"
+                "orange", "grapes", "pineapple", "papaya",
+                "watermelon", "kiwi", "pear"
             ]
         },
         "groceries": {
             "query": "grocery food items",
             "keywords": [
                 "rice", "atta", "flour", "oil",
-                "dal", "salt", "sugar", "grocery"
+                "dal", "salt", "sugar", "grocery",
+                "spices", "tea", "coffee"
             ]
         }
     }
 
+    
+    category_exclusions = {
+        "mobiles": ["fruit", "banana", "mango", "apple fruit", "orange", "grapes"],
+        "laptops": ["fruit", "banana", "mango", "grocery", "vegetable"],
+        "fruits": ["iphone", "samsung", "mobile", "laptop", "charger", "electronics", "monitor"],
+        "groceries": ["iphone", "laptop", "mobile", "electronics", "smartphone"]
+    }
+
+    
     if category_name not in category_rules:
         return render_template("category.html", category=category_name, products=[])
 
     rule = category_rules[category_name]
 
-  
+    
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
         final_query = f"{search_term} {rule['query']}".strip()
@@ -275,7 +288,10 @@ def category_page(category_name):
     filtered = []
     for p in products:
         title = p.get("title", "").lower()
-        if any(k in title for k in rule["keywords"]):
+
+        if any(k in title for k in rule["keywords"]) and not any(
+            bad in title for bad in category_exclusions.get(category_name, [])
+        ):
             filtered.append(p)
 
     
@@ -283,7 +299,10 @@ def category_page(category_name):
         fallback_products = get_product_prices(rule["query"])
         for p in fallback_products:
             title = p.get("title", "").lower()
-            if any(k in title for k in rule["keywords"]):
+
+            if any(k in title for k in rule["keywords"]) and not any(
+                bad in title for bad in category_exclusions.get(category_name, [])
+            ):
                 filtered.append(p)
 
     products = sorted(filtered, key=extract_price)
