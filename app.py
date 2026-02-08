@@ -222,7 +222,7 @@ def index():
 
     return render_template("index.html", products=products)
 
-@app.route("/category/<category_name>")
+@app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
     category_map = {
         "mobiles": "mobile phone",
@@ -231,10 +231,21 @@ def category_page(category_name):
         "groceries": "grocery items"
     }
 
-    base_query = category_map.get(category_name, category_name)
+    # If unknown category → 404 (prevents Sentry spam)
+    if category_name not in category_map:
+        return "Category not found", 404
+
+    base_query = category_map[category_name]
+
+    # 🔎 If user searches inside a category
+    if request.method == "POST":
+        search_term = request.form.get("search", "").strip()
+        final_query = f"{search_term} {base_query}".strip()
+    else:
+        final_query = base_query
 
     products = sorted(
-        get_product_prices(base_query),
+        get_product_prices(final_query),
         key=extract_price
     )
 
