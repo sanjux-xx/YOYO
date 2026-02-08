@@ -238,7 +238,7 @@ def category_page(category_name):
 
     base_query = category_rules[category_name]
 
-  
+    
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
         final_query = f"{search_term} {base_query}".strip()
@@ -247,53 +247,63 @@ def category_page(category_name):
 
     products = get_product_prices(final_query)
 
-
     filtered = []
+
     for p in products:
         title = p.get("title", "").lower()
 
-       
+      
         if category_name == "mobiles":
-            if any(word in title for word in [
-                "mobile", "phone", "smartphone",
-                "iphone", "samsung", "redmi", "realme",
-                "oneplus", "vivo", "oppo", "charger",
-                "case", "cover", "cable", "screen protector"
-            ]):
+            mobile_words = [
+                "mobile", "phone", "smartphone", "iphone", "samsung",
+                "realme", "redmi", "oneplus", "vivo", "oppo",
+                "case", "cover", "charger", "cable", "screen protector"
+            ]
+            if any(word in title for word in mobile_words):
                 filtered.append(p)
 
-       
         elif category_name == "laptops":
-            if any(word in title for word in [
-                "laptop", "notebook", "macbook",
-                "dell", "hp", "lenovo", "asus", "acer"
-            ]):
+            laptop_words = [
+                "laptop", "notebook", "macbook", "chromebook",
+                "charger", "keyboard", "mouse", "bag"
+            ]
+            if any(word in title for word in laptop_words):
                 filtered.append(p)
 
        
         elif category_name == "fruits":
-            if any(word in title for word in [
-                "banana", "mango", "orange", "grapes",
-                "pineapple", "papaya", "watermelon", "kiwi", "pear"
-            ]) or ("apple" in title and "iphone" not in title and "ipad" not in title):
+
+            fruit_words = [
+                "fruit", "fruits", "fresh", "organic",
+                "apple", "banana", "mango", "orange", "grapes",
+                "pineapple", "papaya", "kiwi", "pear",
+                "pomegranate", "watermelon", "avocado", "guava",
+                "strawberry", "blueberry", "dragon fruit"
+            ]
+
+            non_edible_words = [
+                "oil", "cream", "lotion", "shampoo", "soap",
+                "face wash", "hair", "serum", "butter",
+                "cosmetic", "skin", "gel", "mask",
+                "phone", "mobile", "case", "cover"
+            ]
+
+            if any(word in title for word in fruit_words) \
+               and not any(bad in title for bad in non_edible_words):
                 filtered.append(p)
 
        
         elif category_name == "groceries":
-            if any(word in title for word in [
-                "rice", "atta", "flour", "dal",
-                "oil", "salt", "sugar", "spices",
-                "tea", "coffee"
-            ]):
+            grocery_words = [
+                "rice", "atta", "flour", "oil", "dal",
+                "salt", "sugar", "spice", "masala", "grocery"
+            ]
+            if any(word in title for word in grocery_words):
                 filtered.append(p)
 
-  
+    
     if not filtered:
-        fallback_products = get_product_prices(base_query)
-        for p in fallback_products:
-            title = p.get("title", "").lower()
-            if category_name in title:
-                filtered.append(p)
+        filtered = get_product_prices(base_query)
 
     products = sorted(filtered, key=extract_price)
 
