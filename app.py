@@ -301,7 +301,7 @@ def category_page(category_name):
             if any(word in title for word in grocery_words):
                 filtered.append(p)
 
-    
+
     if not filtered:
         filtered = get_product_prices(base_query)
 
