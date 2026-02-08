@@ -224,30 +224,69 @@ def index():
 
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
-    category_map = {
-        "mobiles": "mobile phone",
-        "laptops": "laptop",
-        "fruits": "fresh fruits",
-        "groceries": "grocery items"
+
+    category_rules = {
+        "mobiles": {
+            "query": "mobile phone smartphone",
+            "keywords": [
+                "mobile", "phone", "smartphone",
+                "iphone", "samsung", "redmi", "realme",
+                "case", "cover", "charger", "cable", "screen protector"
+            ]
+        },
+        "laptops": {
+            "query": "laptop computer notebook",
+            "keywords": [
+                "laptop", "notebook", "macbook",
+                "charger", "keyboard", "mouse", "bag"
+            ]
+        },
+        "fruits": {
+            "query": "fresh fruits",
+            "keywords": [
+                "fruit", "apple", "banana", "mango",
+                "orange", "grapes", "pineapple", "papaya"
+            ]
+        },
+        "groceries": {
+            "query": "grocery food items",
+            "keywords": [
+                "rice", "atta", "flour", "oil",
+                "dal", "salt", "sugar", "grocery"
+            ]
+        }
     }
 
-    # If unknown category → 404 (prevents Sentry spam)
-    if category_name not in category_map:
-        return "Category not found", 404
+    if category_name not in category_rules:
+        return render_template("category.html", category=category_name, products=[])
 
-    base_query = category_map[category_name]
+    rule = category_rules[category_name]
 
-    # 🔎 If user searches inside a category
+  
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
-        final_query = f"{search_term} {base_query}".strip()
+        final_query = f"{search_term} {rule['query']}".strip()
     else:
-        final_query = base_query
+        final_query = rule["query"]
 
-    products = sorted(
-        get_product_prices(final_query),
-        key=extract_price
-    )
+    products = get_product_prices(final_query)
+
+   
+    filtered = []
+    for p in products:
+        title = p.get("title", "").lower()
+        if any(k in title for k in rule["keywords"]):
+            filtered.append(p)
+
+    
+    if not filtered:
+        fallback_products = get_product_prices(rule["query"])
+        for p in fallback_products:
+            title = p.get("title", "").lower()
+            if any(k in title for k in rule["keywords"]):
+                filtered.append(p)
+
+    products = sorted(filtered, key=extract_price)
 
     return render_template(
         "category.html",
