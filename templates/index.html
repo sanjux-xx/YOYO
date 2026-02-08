@@ -32,56 +32,6 @@
       object-fit: cover;
     }
 
-    /* HERO SECTION */
-    .hero {
-      background: linear-gradient(135deg, #1e3c72, #6a11cb);
-      color: white;
-      text-align: center;
-      padding: 80px 20px 100px;
-      position: relative;
-      z-index: 1;
-    }
-
-    .hero-content {
-      max-width: 750px;
-      margin: auto;
-    }
-
-    .hero h1 {
-      font-size: 42px;
-      font-weight: 700;
-    }
-
-    .hero p {
-      opacity: 0.9;
-      margin-bottom: 25px;
-    }
-
-    .hero-search {
-      display: flex;
-      max-width: 550px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 50px;
-      overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-
-    .hero-search input {
-      flex: 1;
-      border: none;
-      padding: 14px 18px;
-      outline: none;
-    }
-
-    .hero-search button {
-      background: #f97316;
-      border: none;
-      color: white;
-      padding: 0 28px;
-      font-weight: 600;
-    }
-
     .site-header {
       position: relative;
       z-index: 1;
@@ -100,9 +50,11 @@
       margin: 0;
     }
 
-    /* Hide old search */
     .home-search {
-      display: none;
+      position: relative;
+      z-index: 1;
+      max-width: 700px;
+      margin: 20px auto 50px;
     }
 
     .category-card {
@@ -112,13 +64,8 @@
       border-radius: 18px;
       overflow: hidden;
       box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transition: 0.3s;
       text-decoration: none;
-    }
-
-    .category-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 40px rgba(0,0,0,0.25);
     }
 
     .category-card img {
@@ -163,19 +110,6 @@
 
 <body>
 
-<!-- HERO SECTION -->
-<section class="hero">
-  <div class="hero-content">
-    <h1>Compare Prices. Save Money.</h1>
-    <p>Find the best deals across multiple stores instantly.</p>
-
-    <form method="POST" action="/" class="hero-search">
-      <input type="text" name="product_query" placeholder="Search mobiles, laptops, groceries..." required>
-      <button type="submit">Search</button>
-    </form>
-  </div>
-</section>
-
 <!-- BACKGROUND LOGO -->
 <div class="bg-logo">
   <img src="{{ url_for('static', filename='images/Logo.jpg') }}" alt="">
@@ -187,34 +121,58 @@
   <p>Compare prices. Save money.</p>
 </div>
 
+<!-- SEARCH -->
+<div class="home-search">
+  <form method="POST" action="/" class="d-flex gap-2">
+    <input
+      type="text"
+      name="product_query"
+      class="form-control form-control-lg"
+      placeholder="Search products..."
+      required>
+    <button class="btn btn-primary btn-lg px-4">Search</button>
+  </form>
+</div>
+
 <!-- SEARCH RESULTS -->
 {% if products %}
 <div class="container mb-5">
   <h4 class="mb-3">Search Results</h4>
   <div class="row g-4">
+
     {% for product in products %}
     <div class="col-md-3 col-sm-6">
       <div class="card h-100 shadow-sm">
-        <img src="{{ product.image if product.image else 'https://via.placeholder.com/300x200?text=No+Image' }}"
-             class="card-img-top"
-             style="height:160px;object-fit:contain;padding:10px;">
+
+        <img
+          src="{{ product.image if product.image else 'https://via.placeholder.com/300x200?text=No+Image' }}"
+          class="card-img-top"
+          style="height:160px;object-fit:contain;padding:10px;"
+        >
+
         <div class="card-body">
           <h6>{{ product.title }}</h6>
           <p class="text-success fw-bold">{{ product.price }}</p>
           <small class="text-muted">{{ product.store }}</small>
         </div>
-        <button type="button"
-                class="btn btn-success m-2"
-                onclick='openBuy({{ product.link|tojson }}, {{ product.title|tojson }})'>
+
+        <!-- BUY BUTTON -->
+        <button
+          type="button"
+          class="btn btn-success m-2"
+          onclick='openBuy({{ product.link|tojson }}, {{ product.title|tojson }})'>
           Buy
         </button>
+
       </div>
     </div>
     {% endfor %}
+
   </div>
 </div>
 {% endif %}
 
+<!-- NO RESULTS MESSAGE -->
 {% if request.method == 'POST' and products is not none and products|length == 0 %}
 <p class="text-center text-muted mt-4">
   No results found. Try a different keyword.
@@ -223,7 +181,6 @@
 
 <!-- CATEGORY GRID -->
 <div class="container-fluid mt-5 px-lg-5">
-  <h2 class="text-center mb-4" style="font-weight:700;color:#1e3c72;">Popular Categories</h2>
   <div class="category-grid">
 
     <a href="/category/mobiles" class="category-card">
@@ -253,6 +210,7 @@
 
   </div>
 </div>
+
 
 <script>
 function openBuy(link, title) {
