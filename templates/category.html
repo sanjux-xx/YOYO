@@ -97,12 +97,11 @@
         </div>
       </div>
       {% endfor %}
-    {% else %}
-      <p class="text-center text-muted mt-4">
-        No results found. Try a different keyword.
-      </p>
-    {% endif %}
-
+    {% elif request.method == 'POST' %}
+  <p class="text-center text-muted mt-4">
+    No results found. Try a different keyword.
+  </p>
+{% endif %}
   </div>
 
 </div>
