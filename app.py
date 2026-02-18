@@ -180,7 +180,7 @@ def index():
 
             products = sorted(products, key=extract_price)
 
-    return render_template("index.html", products=products)
+    return render_template("index.html", products=products,variants=None)
 
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
