@@ -172,6 +172,8 @@ def index():
 
             # STEP 1
             filtered = step1_strict_filter(raw, query)
+            if not filtered:
+                filtered = raw
 
             # STEP 2
             products = step2_group_variants(filtered)
