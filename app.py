@@ -70,68 +70,49 @@ def is_valid_query(q):
 # STEP 1 – SAFE FILTER
 # ===============================
 def step1_strict_filter(products, query):
-    if not products or not query:
+    if not products:
         return products
 
-    parts = query.lower().split()
-    if len(parts) < 2:
-        return products  # safety fallback
+    q_words = query.lower().split()
 
-    brand, model = parts[0], parts[1]
-
-    BLOCK = [
-        "case", "cover", "charger", "cable",
-        "adapter", "tempered", "protector"
+    BLOCK_WORDS = [
+        "case", "cover", "back cover",
+        "charger", "cable", "adapter",
+        "tempered", "glass", "screen protector",
+        "skin", "holder", "stand", "mount"
     ]
 
     filtered = []
+
     for p in products:
         title = p.get("title", "").lower()
         if not title:
             continue
 
-        if brand not in title or model not in title:
+        # Remove obvious accessories
+        if any(b in title for b in BLOCK_WORDS):
             continue
 
-        if any(b in title for b in BLOCK):
-            continue
+        # SOFT match: at least ONE query word must appear
+        if any(w in title for w in q_words):
+            filtered.append(p)
 
-        filtered.append(p)
-
-    return filtered if filtered else products  # fallback
+    # CRITICAL fallback to avoid empty results
+    return filtered if filtered else products
 
 # ===============================
 # STEP 2 – VARIANT GROUPING
 # ===============================
-def step2_group_and_aggregate(products):
-    grouped = {}
-
+def step2_group_variants(products):
     for p in products:
         title = p.get("title", "").lower()
-
         if "pro max" in title:
-            name = "iPhone Pro Max"
+            p["variant"] = "Pro Max"
         elif "pro" in title:
-            name = "iPhone Pro"
-        elif "mini" in title:
-            name = "iPhone Mini"
+            p["variant"] = "Pro"
         else:
-            name = "iPhone"
-
-        price = extract_price(p)
-
-        if name not in grouped:
-            grouped[name] = {
-                "name": name,
-                "image": p.get("image"),
-                "min_price": price,
-                "items": [p]
-            }
-        else:
-            grouped[name]["items"].append(p)
-            grouped[name]["min_price"] = min(grouped[name]["min_price"], price)
-
-    return list(grouped.values())
+            p["variant"] = "Base"
+    return products
 
 # ===============================
 # SERPAPI
@@ -190,10 +171,10 @@ def index():
             # STEP 1
             filtered = step1_strict_filter(raw, query)
 
-            # STEP 2 (GROUPED VARIANTS)
-            variants = step2_group_and_aggregate(filtered)
+            # STEP 2
+            products = step2_group_variants(filtered)
 
-            return render_template("index.html", variants=variants)
+            products = sorted(products, key=extract_price)
 
     return render_template("index.html", products=products)
 
@@ -221,8 +202,10 @@ def category_page(category_name):
     products = get_product_prices(final_query)
 
     if category_name == "mobiles":
-    # STEP 1
-     products = step1_strict_filter(products, final_query)
+        # STEP 1
+        products = step1_strict_filter(products, final_query)
+        # STEP 2
+        products = step2_group_variants(products)
 
     products = sorted(products, key=extract_price)
 
@@ -248,6 +231,7 @@ def add_headers(resp):
 # ===============================
 # RUN
 # ===============================
+
 if __name__ == "__main__":
     app.run(host="0.0.0.0", 
 port=int(os.getenv("PORT", 10000)))

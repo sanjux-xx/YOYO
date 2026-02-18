@@ -325,5 +325,14 @@ function openBuy(link, title) {
 }
 </script>
 
+ <script>
+ function togglePrices(id) {
+  const el = document.getElementById("prices-" + id);
+  if (el) {
+    el.classList.toggle("d-none");
+  }
+}
+</script>
+
 </body>
 </html>
