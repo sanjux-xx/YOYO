@@ -255,7 +255,7 @@
         Buy
       </a>
     </div>
-    
+
         <div class="px-3 pb-3 d-none" id="prices-{{ loop.index0 }}">
           {% for item in variant.items %}
           <div class="d-flex justify-content-between align-items-center border-top pt-2">
@@ -316,15 +316,6 @@ function openBuy(link, title) {
   } else {
     const q = encodeURIComponent(title || "");
     window.open("https://www.google.com/search?q=" + q, "_blank", "noopener,noreferrer");
-  }
-}
-</script>
-
- <script>
- function togglePrices(id) {
-  const el = document.getElementById("prices-" + id);
-  if (el) {
-    el.classList.toggle("d-none");
   }
 }
 </script>
