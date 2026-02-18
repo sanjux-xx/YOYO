@@ -29,6 +29,7 @@
     object-fit: cover;
   }
 
+  /* HERO */
   .hero {
     background: linear-gradient(135deg, #1e3c72, #2a5298, #1e3c72);
     background-size: 200% 200%;
@@ -46,9 +47,168 @@
     50% { background-position: 100% 50%; }
     100% { background-position: 0% 50%; }
   }
+
+  .hero::after {
+    content: "";
+    position: absolute;
+    bottom: -70px;
+    left: 0;
+    width: 100%;
+    height: 140px;
+    background: linear-gradient(180deg, #ffffff 0%, #f3f6ff 100%);
+    border-top-left-radius: 50% 100%;
+    border-top-right-radius: 50% 100%;
+  }
+
+  .hero-content {
+    max-width: 760px;
+    margin: auto;
+  }
+
+  .hero h1 {
+    font-size: 48px;
+    font-weight: 700;
+    text-shadow: 0 8px 30px rgba(0,0,0,0.35);
+  }
+
+  .hero p {
+    opacity: 0.9;
+    margin-bottom: 30px;
+    font-size: 18px;
+  }
+
+  .hero-search {
+    display: flex;
+    max-width: 600px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 50px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.35);
+  }
+
+  .hero-search input {
+    flex: 1;
+    border: none;
+    padding: 16px 20px;
+    font-size: 16px;
+    outline: none;
+  }
+
+  .hero-search button {
+    background: linear-gradient(45deg, #ff7a18, #ff512f);
+    border: none;
+    color: white;
+    padding: 0 30px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .hero-search button:hover {
+    transform: scale(1.05);
+    filter: brightness(1.1);
+  }
+
+  .site-header {
+    text-align: center;
+    margin: 100px auto 20px;
+  }
+
+  .site-header h1 {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .site-header p {
+    color: #6b7280;
+  }
+
+  .home-search { display: none; }
+
+  /* CATEGORY SECTION */
+  .container-fluid {
+    margin-top: 70px;
+    padding: 50px 30px 80px;
+  }
+
+  h2.text-center {
+    font-size: 32px;
+    font-weight: 700;
+    color: #1e3c72;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 12px;
+  }
+
+  h2.text-center::after {
+    content: "";
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, #2563eb, #7c3aed);
+    display: block;
+    margin: 10px auto 0;
+    border-radius: 2px;
+  }
+
+  .category-card {
+    position: relative;
+    display: block;
+    height: 260px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 18px 45px rgba(0,0,0,0.18);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+  }
+
+  .category-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 25px 60px rgba(0,0,0,0.28);
+  }
+
+  .category-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .category-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.05));
+  }
+
+  .category-card h3 {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+    z-index: 2;
+    margin: 0;
+  }
+
+  .category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 25px;
+  }
+
+  @media (min-width: 768px) {
+    .category-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (min-width: 1200px) {
+    .category-grid { grid-template-columns: repeat(4, 1fr); }
+  }
 </style>
 </head>
-
 <body>
 
 <section class="hero">
@@ -66,12 +226,11 @@
   <img src="{{ url_for('static', filename='images/Logo.jpg') }}" alt="">
 </div>
 
-<div class="site-header text-center my-4">
+<div class="site-header">
   <h1>Across the Tags</h1>
   <p>Compare prices. Save money.</p>
 </div>
 
-{# ================= VARIANT RESULTS (NEW) ================= #}
 {% if variants %}
 <div class="container mb-5">
   <h4 class="mb-3">Search Results</h4>
@@ -81,17 +240,19 @@
     <div class="col-xl-3 col-lg-4 col-md-6 col-sm-12 d-flex">
       <div class="card h-100 shadow-sm w-100">
 
-        <img src="{{ variant.image or 'https://via.placeholder.com/300x200?text=No+Image' }}"
+        <img src="{{ variant.image if variant.image else 'https://via.placeholder.com/300x200?text=No+Image' }}"
              class="card-img-top"
              style="height:160px;object-fit:contain;padding:10px;">
 
         <div class="card-body d-flex flex-column">
-          <h6>{{ variant.name }}</h6>
+          <h6 class="mb-1">{{ variant.name }}</h6>
+
           <p class="text-success fw-bold mb-1">
             From ₹{{ variant.min_price }}
           </p>
+
           <small class="text-muted mb-2">
-            {{ variant.items|length }} stores
+            {{ variant.items | length }} stores available
           </small>
 
           <button class="btn btn-success mt-auto"
@@ -105,10 +266,10 @@
           <div class="d-flex justify-content-between align-items-center border-top pt-2">
             <span>{{ item.store }}</span>
             <strong>{{ item.price }}</strong>
-            <button class="btn btn-sm btn-outline-success"
-                    onclick='openBuy({{ item.link|tojson }}, {{ item.title|tojson }})'>
+            <a href="{{ item.link }}" target="_blank"
+               class="btn btn-sm btn-outline-success">
               Buy
-            </button>
+            </a>
           </div>
           {% endfor %}
         </div>
@@ -121,31 +282,10 @@
 </div>
 {% endif %}
 
-{# ================= FALLBACK: OLD PRODUCTS (SAFE) ================= #}
-{% if products %}
-<div class="container mb-5">
-  <h4 class="mb-3">Search Results</h4>
-  <div class="row g-4">
-    {% for product in products %}
-    <div class="col-md-3 col-sm-6">
-      <div class="card h-100 shadow-sm">
-        <img src="{{ product.image or 'https://via.placeholder.com/300x200?text=No+Image' }}"
-             class="card-img-top"
-             style="height:160px;object-fit:contain;padding:10px;">
-        <div class="card-body">
-          <h6>{{ product.title }}</h6>
-          <p class="text-success fw-bold">{{ product.price }}</p>
-          <small class="text-muted">{{ product.store }}</small>
-        </div>
-        <button class="btn btn-success m-2"
-                onclick='openBuy({{ product.link|tojson }}, {{ product.title|tojson }})'>
-          Buy
-        </button>
-      </div>
-    </div>
-    {% endfor %}
-  </div>
-</div>
+{% if request.method == 'POST' and products is not none and products|length == 0 %}
+<p class="text-center text-muted mt-4">
+  No results found. Try a different keyword.
+</p>
 {% endif %}
 
 <div class="container-fluid mt-5 px-lg-5">
@@ -175,11 +315,6 @@
 </div>
 
 <script>
-function togglePrices(id) {
-  const el = document.getElementById("prices-" + id);
-  if (el) el.classList.toggle("d-none");
-}
-
 function openBuy(link, title) {
   if (typeof link === "string" && link.startsWith("http")) {
     window.open(link, "_blank", "noopener,noreferrer");
