@@ -106,12 +106,14 @@ def step1_strict_filter(products, query):
 def step2_group_variants(products):
     for p in products:
         title = p.get("title", "").lower()
+
         if "pro max" in title:
             p["variant"] = "Pro Max"
-        elif "pro" in title:
+        elif "pro" in title and "pro max" not in title:
             p["variant"] = "Pro"
         else:
             p["variant"] = "Base"
+
     return products
 
 # ===============================
