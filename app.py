@@ -163,6 +163,7 @@ def get_product_prices(query):
 @app.route("/", methods=["GET", "POST"])
 def index():
     products = []
+    variants = None   # ✅ FIX: define it explicitly
 
     if request.method == "POST":
         query = request.form.get("product_query", "").strip()
@@ -180,7 +181,11 @@ def index():
 
             products = sorted(products, key=extract_price)
 
-    return render_template("index.html", products=products,variants=None)
+    return render_template(
+        "index.html",
+        products=products,
+        variants=variants
+    )
 
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
