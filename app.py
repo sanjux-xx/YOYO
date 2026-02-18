@@ -103,16 +103,35 @@ def step1_strict_filter(products, query):
 # ===============================
 # STEP 2 – VARIANT GROUPING
 # ===============================
-def step2_group_variants(products):
+def step2_group_and_aggregate(products):
+    grouped = {}
+
     for p in products:
         title = p.get("title", "").lower()
+
         if "pro max" in title:
-            p["variant"] = "Pro Max"
+            name = "iPhone Pro Max"
         elif "pro" in title:
-            p["variant"] = "Pro"
+            name = "iPhone Pro"
+        elif "mini" in title:
+            name = "iPhone Mini"
         else:
-            p["variant"] = "Base"
-    return products
+            name = "iPhone"
+
+        price = extract_price(p)
+
+        if name not in grouped:
+            grouped[name] = {
+                "name": name,
+                "image": p.get("image"),
+                "min_price": price,
+                "items": [p]
+            }
+        else:
+            grouped[name]["items"].append(p)
+            grouped[name]["min_price"] = min(grouped[name]["min_price"], price)
+
+    return list(grouped.values())
 
 # ===============================
 # SERPAPI
@@ -171,10 +190,10 @@ def index():
             # STEP 1
             filtered = step1_strict_filter(raw, query)
 
-            # STEP 2
-            products = step2_group_variants(filtered)
+            # STEP 2 (GROUPED VARIANTS)
+            variants = step2_group_and_aggregate(filtered)
 
-            products = sorted(products, key=extract_price)
+            return render_template("index.html", variants=variants)
 
     return render_template("index.html", products=products)
 
@@ -202,10 +221,8 @@ def category_page(category_name):
     products = get_product_prices(final_query)
 
     if category_name == "mobiles":
-        # STEP 1
-        products = step1_strict_filter(products, final_query)
-        # STEP 2
-        products = step2_group_variants(products)
+    # STEP 1
+     products = step1_strict_filter(products, final_query)
 
     products = sorted(products, key=extract_price)
 
