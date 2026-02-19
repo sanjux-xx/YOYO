@@ -142,12 +142,36 @@ def get_product_prices(query):
         products = []
 
         for item in results.get("shopping_results", []):
+            title = item.get("title", "")
+
+            # 1️⃣ get best possible link
+            link = (
+                item.get("link")
+                or item.get("product_link")
+                or (
+                    item.get("offers", [{}])[0].get("link")
+                    if item.get("offers")
+                    else ""
+                )
+            )
+
+            # 2️⃣ fix relative google links
+            if link and link.startswith("/"):
+                link = "https://www.google.com" + link
+
+            # 3️⃣ fallback → GOOGLE SHOPPING (not normal google)
+            if not link or not link.startswith("http"):
+                link = (
+                    "https://www.google.com/search?tbm=shop&q="
+                    + re.sub(r"\s+", "+", title)
+                )
+
             products.append({
-                "title": item.get("title", ""),
+                "title": title,
                 "price": item.get("price", ""),
                 "store": item.get("source", ""),
                 "image": item.get("thumbnail", ""),
-                "link": item.get("link", "")
+                "link": link
             })
 
         cache[cache_key] = (products, now)
