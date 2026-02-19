@@ -244,16 +244,16 @@
       <h6 class="mb-1">{{ product.title }}</h6>
 
       <p class="text-success fw-bold mb-1">
-        {{ product.price }}
+        {{ product.best_price }}
       </p>
 
       <small class="text-muted mb-2">
-        {{ product.store }}
+        {{ product.best_store }}
       </small>
 
       <button type="button"
         class="btn btn-success mt-auto"
-        onclick='openBuy({{ product.link|tojson }}, {{ product.title|tojson }})'>
+        onclick='openBuy({{ product.best_link|tojson }}, {{ product.title|tojson }})'>
        Buy
      </button>
     </div>
