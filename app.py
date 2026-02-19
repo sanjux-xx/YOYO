@@ -76,11 +76,20 @@ def step1_strict_filter(products, query):
     q_words = query.lower().split()
 
     BLOCK_WORDS = [
-        "case", "cover", "back cover",
-        "charger", "cable", "adapter",
-        "tempered", "glass", "screen protector",
-        "skin", "holder", "stand", "mount"
-    ]
+    # accessories
+    "case", "cover", "back cover", "skin",
+    "tempered", "glass", "screen protector",
+    "charger", "cable", "adapter",
+    "holder", "stand", "mount",
+
+    # resale / fake listings
+    "sell", "selling", "used", "second hand",
+    "refurbished", "pre owned", "exchange",
+
+    # non-phone junk
+    "sports", "jersey", "tshirt", "toy",
+    "dummy", "model", "poster", "display"
+]
 
     filtered = []
 
@@ -92,6 +101,11 @@ def step1_strict_filter(products, query):
         # Remove obvious accessories
         if any(b in title for b in BLOCK_WORDS):
             continue
+# Must be an actual phone
+        PHONE_KEYWORDS = ["iphone", "mobile", "smartphone"]
+
+        if not any(k in title for k in PHONE_KEYWORDS):
+           continue        
 
         # SOFT match: at least ONE query word must appear
         if any(w in title for w in q_words):
