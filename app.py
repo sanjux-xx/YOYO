@@ -6,6 +6,12 @@ import time
 import logging
 from collections import defaultdict
 
+TRUSTED_STORES = [
+    "amazon", "flipkart",
+    "reliance", "croma",
+    "tatacliq", "vijaysales"
+]
+
 # ===============================
 # SENTRY
 # ===============================
@@ -59,6 +65,8 @@ def extract_price(p):
         return float(p.get("price", "").replace("₹", "").replace(",", ""))
     except:
         return float("inf")
+    
+    
 
 def is_valid_query(q):
     if not q:
@@ -190,6 +198,9 @@ def step3_compare_products(products):
         key = build_product_key(p)
         price = extract_price(p)
 
+        if price == float("inf"):
+            continue
+
         if key not in grouped:
             grouped[key] = {
                 "title": clean_display_title(p),
@@ -207,44 +218,31 @@ def step3_compare_products(products):
             "link": p.get("link", "")
         })
 
-        if price < grouped[key]["best_price"]:
-            grouped[key]["best_price"] = price
-            grouped[key]["best_store"] = p.get("store", "")
-            grouped[key]["best_link"] = p.get("link", "")
-            
+    # 🔥 SORT & PRIORITIZE STORES
     for product in grouped.values():
-        product["offers"] = sorted(
-        product["offers"],
-        key=lambda x: x["price"]
-    )
+        preferred = []
+        others = []
 
-        PREFERRED_STORES = ["amazon", "flipkart"]
+        for offer in product["offers"]:
+            store_name = offer["store"].lower()
+            if any(ts in store_name for ts in TRUSTED_STORES):
+                preferred.append(offer)
+            else:
+                others.append(offer)
 
-    for product in grouped.values():
-    # split offers
-     preferred = []
-     others = []
-
-    for offer in product["offers"]:
-        store_name = offer["store"].lower()
-        if any(p in store_name for p in PREFERRED_STORES):
-            preferred.append(offer)
-        else:
-            others.append(offer)
-
-    # sort each group by price
+        # sort both by price
         preferred.sort(key=lambda x: x["price"])
         others.sort(key=lambda x: x["price"])
 
-    # merge back
+        # merge back
         product["offers"] = preferred + others
 
-    # ensure best_price is always first offer
+        # force best_* from first offer
         if product["offers"]:
-         best = product["offers"][0]
-         product["best_price"] = best["price"]
-         product["best_store"] = best["store"]
-         product["best_link"] = best["link"]
+            best = product["offers"][0]
+            product["best_price"] = best["price"]
+            product["best_store"] = best["store"]
+            product["best_link"] = best["link"]
 
     return list(grouped.values())
 
