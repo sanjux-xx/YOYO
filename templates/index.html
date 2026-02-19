@@ -256,13 +256,15 @@
         onclick='openBuy({{ product.best_link|tojson }}, {{ product.title|tojson }})'>
        Buy
      </button>
+     {% if product.offers|length > 1 %}
      <button class="btn btn-outline-secondary btn-sm mt-2"
-        onclick="togglePrices({{ loop.index0 }})">
-       View other prices
-      </button>
+        onclick="togglePrices({{ loop.index0 }}, this)">
+         View other prices ({{ product.offers|length - 1 }})
+     </button>
+     {% endif %}
     </div>
 
-    <div class="mt-2 d-none" id="prices-{{ loop.index }}">
+    <div class="mt-2 d-none" id="prices-{{ loop.index0 }}">
   {% if product.offers|length > 1 %}
     {% for offer in product.offers %}
       {% if offer.store != product.best_store %}
@@ -272,7 +274,7 @@
           <a href="{{ offer.link }}" target="_blank"
              class="btn btn-sm btn-outline-success">
             Buy
-          </a>
+          </
         </div>
       {% endif %}
     {% endfor %}
@@ -330,10 +332,18 @@ function openBuy(link, title) {
   }
 }
 </script>
+
 <script>
-function togglePrices(id) {
+function togglePrices(id, btn) {
   const el = document.getElementById("prices-" + id);
-  if (el) el.classList.toggle("d-none");
+  if (!el) return;
+
+  const isHidden = el.classList.contains("d-none");
+  el.classList.toggle("d-none");
+
+  if (btn) {
+    btn.innerText = isHidden ? "Hide prices" : "View other prices";
+  }
 }
 </script>
 
