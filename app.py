@@ -125,6 +125,8 @@ def step2_group_variants(products):
             p["variant"] = "Pro Max"
         elif "pro" in title and "pro max" not in title:
             p["variant"] = "Pro"
+        elif "mini" in title:
+            p["variant"] = "Mini"
         else:
             p["variant"] = "Base"
 
@@ -143,15 +145,21 @@ def normalize_title(title):
 def build_product_key(p):
     title = normalize_title(p.get("title", ""))
 
-    storage = ""
-    m = re.search(r"(64|128|256|512)\s*gb", title)
-    if m:
-        storage = m.group(1) + "gb"
+    # detect iphone model number (12, 13, 14, etc.)
+    m = re.search(r"iphone\s*(\d+)", title)
+    model = m.group(1) if m else "unknown"
 
-    variant = p.get("variant", "Base").lower()
-    base_name = title.replace(storage, "").strip()
+    # detect variant
+    if "pro max" in title:
+        variant = "pro max"
+    elif "pro" in title:
+        variant = "pro"
+    elif "mini" in title:
+        variant = "mini"
+    else:
+        variant = "base"
 
-    return f"{base_name}|{storage}|{variant}"
+    return f"iphone-{model}-{variant}"
 
 
 def step3_compare_products(products):
