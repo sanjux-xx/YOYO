@@ -115,6 +115,61 @@ def step2_group_variants(products):
             p["variant"] = "Base"
 
     return products
+# ===============================
+# STEP 3 – COMPARE & PICK BEST PRICE
+# ===============================
+def normalize_title(title):
+    t = title.lower()
+    t = re.sub(r"\(.*?\)", "", t)
+    t = re.sub(r"[^a-z0-9\s]", "", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def build_product_key(p):
+    title = normalize_title(p.get("title", ""))
+
+    storage = ""
+    m = re.search(r"(64|128|256|512)\s*gb", title)
+    if m:
+        storage = m.group(1) + "gb"
+
+    variant = p.get("variant", "Base").lower()
+    base_name = title.replace(storage, "").strip()
+
+    return f"{base_name}|{storage}|{variant}"
+
+
+def step3_compare_products(products):
+    grouped = {}
+
+    for p in products:
+        key = build_product_key(p)
+        price = extract_price(p)
+
+        if key not in grouped:
+            grouped[key] = {
+                "title": p["title"],
+                "variant": p.get("variant", "Base"),
+                "best_price": price,
+                "best_store": p.get("store", ""),
+                "best_link": p.get("link", ""),
+                "image": p.get("image", ""),
+                "offers": []
+            }
+
+        grouped[key]["offers"].append({
+            "store": p.get("store", ""),
+            "price": price,
+            "link": p.get("link", "")
+        })
+
+        if price < grouped[key]["best_price"]:
+            grouped[key]["best_price"] = price
+            grouped[key]["best_store"] = p.get("store", "")
+            grouped[key]["best_link"] = p.get("link", "")
+
+    return list(grouped.values())
 
 # ===============================
 # SERPAPI
@@ -187,23 +242,28 @@ def get_product_prices(query):
 @app.route("/", methods=["GET", "POST"])
 def index():
     products = []
-    variants = None   # ✅ FIX: define it explicitly
+    variants = None   # keep if template expects it
 
     if request.method == "POST":
         query = request.form.get("product_query", "").strip()
 
         if is_valid_query(query):
+            # RAW SERPAPI DATA
             raw = get_product_prices(query)
 
-            # STEP 1
+            # STEP 1 – FILTER
             filtered = step1_strict_filter(raw, query)
             if not filtered:
                 filtered = raw
 
-            # STEP 2
-            products = step2_group_variants(filtered)
+            # STEP 2 – VARIANT GROUPING
+            variants = step2_group_variants(filtered)
 
-            products = sorted(products, key=extract_price)
+            # STEP 3 – COMPARE & PICK BEST
+            products = step3_compare_products(variants)
+
+            # FINAL SORT (best price first)
+            products = sorted(products, key=lambda x: x["best_price"])
 
     return render_template(
         "index.html",
