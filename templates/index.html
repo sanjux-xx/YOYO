@@ -251,10 +251,11 @@
         {{ product.store }}
       </small>
 
-      <a href="{{ product.link }}" target="_blank"
-         class="btn btn-success mt-auto">
-        Buy
-      </a>
+      <button type="button"
+        class="btn btn-success mt-auto"
+        onclick='openBuy({{ product.link|tojson }}, {{ product.title|tojson }})'>
+       Buy
+     </button>
     </div>
 
         
