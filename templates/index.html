@@ -268,13 +268,16 @@
   {% if product.offers|length > 1 %}
     {% for offer in product.offers %}
       {% if offer.store != product.best_store %}
-        <div class="d-flex justify-content-between align-items-center border-top pt-1">
-          <span>{{ offer.store }}</span>
-          <strong>{{ offer.price }}</strong>
-          <a href="{{ offer.link }}" target="_blank"
-             class="btn btn-sm btn-outline-success">
-            Buy
-          </
+        <div class="border-top pt-2">
+          <div class="fw-semibold">{{ offer.store }}</div>
+
+          <div class="d-flex justify-content-between align-items-center">
+            <strong>₹{{ offer.price }}</strong>
+            <a href="{{ offer.link }}" target="_blank"
+               class="btn btn-sm btn-outline-success">
+              Buy
+            </a>
+          </div>
         </div>
       {% endif %}
     {% endfor %}
