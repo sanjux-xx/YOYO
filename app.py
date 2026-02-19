@@ -211,6 +211,40 @@ def step3_compare_products(products):
             grouped[key]["best_price"] = price
             grouped[key]["best_store"] = p.get("store", "")
             grouped[key]["best_link"] = p.get("link", "")
+            
+    for product in grouped.values():
+        product["offers"] = sorted(
+        product["offers"],
+        key=lambda x: x["price"]
+    )
+
+        PREFERRED_STORES = ["amazon", "flipkart"]
+
+    for product in grouped.values():
+    # split offers
+     preferred = []
+     others = []
+
+    for offer in product["offers"]:
+        store_name = offer["store"].lower()
+        if any(p in store_name for p in PREFERRED_STORES):
+            preferred.append(offer)
+        else:
+            others.append(offer)
+
+    # sort each group by price
+        preferred.sort(key=lambda x: x["price"])
+        others.sort(key=lambda x: x["price"])
+
+    # merge back
+        product["offers"] = preferred + others
+
+    # ensure best_price is always first offer
+        if product["offers"]:
+         best = product["offers"][0]
+         product["best_price"] = best["price"]
+         product["best_store"] = best["store"]
+         product["best_link"] = best["link"]
 
     return list(grouped.values())
 
