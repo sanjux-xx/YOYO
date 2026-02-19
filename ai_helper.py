@@ -3,7 +3,7 @@ import re
 
 # Lightweight spell + text correction model
 spell_corrector = pipeline(
-    "text2text-generation",
+    "text-generation",
     model="google/flan-t5-small"
 )
 
