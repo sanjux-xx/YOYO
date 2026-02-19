@@ -161,6 +161,27 @@ def build_product_key(p):
 
     return f"iphone-{model}-{variant}"
 
+def clean_display_title(p):
+    title = p.get("title", "").lower()
+
+    # detect iphone model number
+    m = re.search(r"iphone\s*(\d+)", title)
+    model = m.group(1) if m else ""
+
+    # detect variant
+    if "pro max" in title:
+        variant = "Pro Max"
+    elif "pro" in title:
+        variant = "Pro"
+    elif "mini" in title:
+        variant = "Mini"
+    else:
+        variant = ""
+
+    if model:
+        return f"iPhone {model} {variant}".strip()
+    return p.get("title", "")
+
 
 def step3_compare_products(products):
     grouped = {}
@@ -171,7 +192,7 @@ def step3_compare_products(products):
 
         if key not in grouped:
             grouped[key] = {
-                "title": p["title"],
+                "title": clean_display_title(p),
                 "variant": p.get("variant", "Base"),
                 "best_price": price,
                 "best_store": p.get("store", ""),
