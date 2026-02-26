@@ -351,7 +351,7 @@ def get_product_prices(query):
 def index():
     products = []
     variants = None
-    query = ""   # ✅ ADD THIS LINE
+    query = ""   # important for GET
 
     if request.method == "POST":
         raw_query = request.form.get("product_query", "").strip()
@@ -368,11 +368,13 @@ def index():
             products = step3_compare_products(variants)
             products = sorted(products, key=lambda x: x["best_price"])
 
+    # ✅ GET request just renders page (NO logic)
     return render_template(
         "index.html",
         products=products,
         variants=variants
     )
+    
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
 
