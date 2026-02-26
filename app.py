@@ -350,28 +350,22 @@ def get_product_prices(query):
 @app.route("/", methods=["GET", "POST"])
 def index():
     products = []
-    variants = None   # keep if template expects it
+    variants = None
+    query = ""   # ✅ ADD THIS LINE
 
     if request.method == "POST":
-       raw_query = request.form.get("product_query", "").strip()
-       query = ai_clean_query(raw_query)
+        raw_query = request.form.get("product_query", "").strip()
+        query = ai_clean_query(raw_query)
 
-    if is_valid_query(query):
-            # RAW SERPAPI DATA
+        if is_valid_query(query):
             raw = get_product_prices(query)
 
-            # STEP 1 – FILTER
             filtered = step1_strict_filter(raw, query)
             if not filtered:
                 filtered = raw
 
-            # STEP 2 – VARIANT GROUPING
             variants = step2_group_variants(filtered)
-
-            # STEP 3 – COMPARE & PICK BEST
             products = step3_compare_products(variants)
-
-            # FINAL SORT (best price first)
             products = sorted(products, key=lambda x: x["best_price"])
 
     return render_template(
@@ -379,7 +373,6 @@ def index():
         products=products,
         variants=variants
     )
-
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
 
