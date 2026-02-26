@@ -5,4 +5,4 @@ sentry-sdk[flask]
 transformers
 torch
 sentencepiece
-
+gunicorn
