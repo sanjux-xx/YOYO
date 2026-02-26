@@ -435,5 +435,7 @@ def add_headers(resp):
 # ===============================
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", os.environ.get("WEBSITES_PORT", 8000)))
-    app.run(host="0.0.0.0", port=port)
+    app.run(
+        host="0.0.0.0",
+        port=int(os.getenv("PORT", 8000))
+    )
