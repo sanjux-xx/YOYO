@@ -5,7 +5,7 @@ import os
 import time
 import logging
 from collections import defaultdict
-from ai_helper import ai_clean_query
+
 
 TRUSTED_STORES = [
     "amazon", "flipkart",
@@ -194,8 +194,7 @@ def clean_display_title(p):
 
 def step3_compare_products(products):
     grouped = {}
-
-    from ai_offer_ranker import ai_score_offer  
+  
 
     for p in products:
         key = build_product_key(p)
@@ -215,42 +214,19 @@ def step3_compare_products(products):
                 "offers": []
             }
 
-        # ✅ AI score 
-        offer_score = ai_score_offer(
-            p.get("title", ""),
-            p.get("store", ""),
-            price
-        )
+        
+        
 
         # ✅ append ONCE
         grouped[key]["offers"].append({
             "store": p.get("store", ""),
             "price": price,
             "link": p.get("link", ""),
-            "ai_score": offer_score
+            
         })
         
-# AI-based ranking first
 
-    product["offers"].sort(
-    key=lambda x: (x["ai_score"], -x["price"]),
-    reverse=True
-    )
-    preferred = []
-    others = []
 
-    for offer in product["offers"]:
-     store = offer["store"].lower()
-     if any(t in store for t in TRUSTED_STORES):
-        preferred.append(offer)
-     else:
-        others.append(offer)
-
-    preferred.sort(key=lambda x: x["price"])
-    others.sort(key=lambda x: x["price"])
-
-    product["offers"] = preferred + others
-    
     # 🔥 SORT & PRIORITIZE STORES
     for product in grouped.values():
         preferred = []
@@ -355,7 +331,7 @@ def index():
 
     if request.method == "POST":
         raw_query = request.form.get("product_query", "").strip()
-        query = ai_clean_query(raw_query)
+        query = raw_query
 
         if is_valid_query(query):
             raw = get_product_prices(query)

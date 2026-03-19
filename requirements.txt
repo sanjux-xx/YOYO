@@ -2,7 +2,5 @@ Flask
 requests
 google-search-results
 sentry-sdk[flask]
-transformers
-torch
-sentencepiece
 gunicorn
+serpapi
