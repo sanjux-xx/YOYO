@@ -154,21 +154,11 @@ def normalize_title(title):
 def build_product_key(p):
     title = normalize_title(p.get("title", ""))
 
-    # detect iphone model number (12, 13, 14, etc.)
-    m = re.search(r"iphone\s*(\d+)", title)
-    model = m.group(1) if m else "unknown"
+    # Take first 5 meaningful words as key
+    words = title.split()
+    key = " ".join(words[:5])
 
-    # detect variant
-    if "pro max" in title:
-        variant = "pro max"
-    elif "pro" in title:
-        variant = "pro"
-    elif "mini" in title:
-        variant = "mini"
-    else:
-        variant = "base"
-
-    return f"iphone-{model}-{variant}"
+    return key
 
 def clean_display_title(p):
     title = p.get("title", "").lower()
