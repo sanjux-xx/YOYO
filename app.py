@@ -50,14 +50,14 @@ blocked_ips = {}
 cache = {}
 query_counter = defaultdict(list)
 
-# ===============================
+
 # LOGGING
-# ===============================
+
 logging.basicConfig(level=logging.INFO)
 
-# ===============================
+
 # HELPERS
-# ===============================
+
 def get_client_ip():
     return request.headers.get("CF-Connecting-IP") or request.remote_addr
 
@@ -75,9 +75,9 @@ def is_valid_query(q):
     q = q.strip()
     return 3 <= len(q) <= 100
 
-# ===============================
+
 # STEP 1 – SAFE FILTER
-# ===============================
+
 def step1_strict_filter(products, query):
     if not products:
         return products
@@ -123,9 +123,9 @@ def step1_strict_filter(products, query):
     # CRITICAL fallback to avoid empty results
     return filtered if filtered else products
 
-# ===============================
+
 # STEP 2 – VARIANT GROUPING
-# ===============================
+
 def step2_group_variants(products):
     for p in products:
         title = p.get("title", "").lower()
@@ -140,9 +140,9 @@ def step2_group_variants(products):
             p["variant"] = "Base"
 
     return products
-# ===============================
+
 # STEP 3 – COMPARE & PICK BEST PRICE
-# ===============================
+
 def normalize_title(title):
     t = title.lower()
     t = re.sub(r"\(.*?\)", "", t)
@@ -207,7 +207,7 @@ def step3_compare_products(products):
         
         
 
-        # ✅ append ONCE
+        #  append ONCE
         grouped[key]["offers"].append({
             "store": p.get("store", ""),
             "price": price,
@@ -217,7 +217,7 @@ def step3_compare_products(products):
         
 
 
-    # 🔥 SORT & PRIORITIZE STORES
+    #  SORT & PRIORITIZE STORES
     for product in grouped.values():
         preferred = []
         others = []
@@ -233,10 +233,9 @@ def step3_compare_products(products):
         preferred.sort(key=lambda x: x["price"])
         others.sort(key=lambda x: x["price"])
 
-        # merge back
         product["offers"] = preferred + others
 
-        # force best_* from first offer
+        
         if product["offers"]:
             best = product["offers"][0]
             product["best_price"] = best["price"]
@@ -245,9 +244,9 @@ def step3_compare_products(products):
 
     return list(grouped.values())
 
-# ===============================
+
 # SERPAPI
-# ===============================
+
 def get_product_prices(query):
     cache_key = query.lower().strip()
     now = time.time()
@@ -273,7 +272,7 @@ def get_product_prices(query):
         for item in results.get("shopping_results", []):
             title = item.get("title", "")
 
-            # 1️⃣ get best possible link
+            
             link = (
                 item.get("link")
                 or item.get("product_link")
@@ -284,11 +283,11 @@ def get_product_prices(query):
                 )
             )
 
-            # 2️⃣ fix relative google links
+           
             if link and link.startswith("/"):
                 link = "https://www.google.com" + link
 
-            # 3️⃣ fallback → GOOGLE SHOPPING (not normal google)
+            
             if not link or not link.startswith("http"):
                 link = (
                     "https://www.google.com/search?tbm=shop&q="
@@ -310,9 +309,9 @@ def get_product_prices(query):
         sentry_sdk.capture_exception(e)
         return []
 
-# ===============================
+
 # ROUTES
-# ===============================
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     products = []
@@ -334,7 +333,7 @@ def index():
             products = step3_compare_products(variants)
             products = sorted(products, key=lambda x: x["best_price"])
 
-    # ✅ GET request just renders page (NO logic)
+    #  GET request just renders page (NO logic)
     return render_template(
         "index.html",
         products=products,
@@ -391,7 +390,5 @@ def add_headers(resp):
     resp.headers["X-Content-Type-Options"] = "nosniff"
     return resp
 
-# ===============================
-# RUN
-# ===============================
+
 
