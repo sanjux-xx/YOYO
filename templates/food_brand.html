@@ -1,93 +1,177 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>{{ brand_name }} Menu | Across the Tags</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ brand_name }} Menu — CostShot Food</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
   <style>
-    body {
-      background: #f8f9fa;
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-    }
-
-    /* Menu item card */
+    * { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,.font-display { font-family: 'Syne', sans-serif; }
+    .navbar-glass { backdrop-filter:blur(18px); background:rgba(28,10,0,0.88); border-bottom:1px solid rgba(255,255,255,0.08); }
+    .brand-hero { background: linear-gradient(135deg, #3b1200 0%, #7c2d12 50%, #3b1200 100%); }
     .menu-item {
-      display: block;
-      padding: 14px 18px;
-      margin-bottom: 10px;
-      background: #ffffff;
-      border-radius: 10px;
-      text-decoration: none;
-      color: #212529;
-      font-weight: 500;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-      transition: all 0.2s ease;
-      cursor: pointer;
-      word-break: break-word;
+      transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s ease, background 0.2s;
     }
-
     .menu-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(0,0,0,0.15);
-      color: #0d6efd;
+      transform: translateX(6px);
+      box-shadow: 0 4px 20px rgba(251,146,60,0.2);
+      background: linear-gradient(135deg, #fff7ed, #fff);
     }
-
-    /* Keyboard accessibility */
-    .menu-item:focus {
-      outline: 2px solid #0d6efd;
-      outline-offset: 2px;
-    }
-
-    /* Prevent long category names breaking layout */
-    h4 {
-      word-break: break-word;
-    }
+    .category-badge { background: linear-gradient(135deg, #F97316, #EF4444); }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(16px);} to{opacity:1;transform:translateY(0);} }
+    .fade-in { animation: fadeUp 0.5s ease forwards; opacity:0; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#F97316; border-radius:4px; }
+    input[type="text"]:focus { outline: none; box-shadow: 0 0 0 3px rgba(249,115,22,0.3); }
   </style>
 </head>
+<body class="bg-orange-50 antialiased">
 
-<body>
+  <!-- NAVBAR -->
+  <nav class="navbar-glass fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-4">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+          <span class="text-white font-bold text-sm" style="font-family:Syne">CS</span>
+        </div>
+        <span class="text-white font-bold text-xl hidden sm:block" style="font-family:Syne">CostShot</span>
+      </a>
 
-<div class="container py-4">
+      <!-- Search within menu -->
+      <div class="flex-1 max-w-sm">
+        <div class="relative">
+          <input type="text" id="menu-search" placeholder="Search menu items..."
+            class="w-full bg-white/10 text-white placeholder-white/50 border border-white/15 rounded-full px-5 py-2 pr-10 text-sm transition"/>
+          <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        </div>
+      </div>
 
-  <!-- Back button -->
-  <a
-    href="/food"
-    class="btn btn-link mb-3"
-    aria-label="Back to food page"
-  >
-    ← Back to Food
-  </a>
-
-  <!-- Brand title -->
-  <h2 class="mb-4">{{ brand_name }} Menu</h2>
-
-  <!-- Menu categories -->
-  {% for category, items in menu.items() %}
-    <div class="mb-4">
-      <h4 class="mb-3">{{ category }}</h4>
-
-      {% for item in items %}
-        <a
-          href="{{ url_for(
-            'food.food_item_page',
-            brand=brand_key,
-            item_slug=item|lower|replace(' ', '-')
-          ) }}"
-          class="menu-item"
-        >
-          {{ item }}
-        </a>
-      {% endfor %}
+      <a href="/food" class="text-white/60 hover:text-white text-sm transition flex items-center gap-1 flex-shrink-0">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <span class="hidden sm:block">Back</span>
+      </a>
     </div>
-  {% endfor %}
+  </nav>
 
-</div>
+  <!-- BRAND HERO -->
+  <div class="brand-hero pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div class="flex items-center gap-2 text-white/50 text-xs mb-3">
+        <a href="/" class="hover:text-white transition">Home</a>
+        <span>/</span>
+        <a href="/food" class="hover:text-white transition">Food</a>
+        <span>/</span>
+        <span class="text-white/80">{{ brand_name }}</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-white flex items-center justify-center shadow-lg text-3xl flex-shrink-0">
+          {% if 'mcdonald' in brand_name.lower() %}🍔
+          {% elif 'pizza' in brand_name.lower() %}🍕
+          {% elif 'domino' in brand_name.lower() %}🍕
+          {% else %}🍽️{% endif %}
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-white" style="font-family:Syne">{{ brand_name }}</h1>
+          <p class="text-white/60 text-sm mt-1">Compare prices across Swiggy, Zomato & Official</p>
+        </div>
+      </div>
+
+      <!-- Platform badges -->
+      <div class="flex gap-2 mt-4 flex-wrap">
+        <span class="bg-orange-500/30 border border-orange-400/30 text-orange-200 text-xs px-3 py-1 rounded-full">🟠 Swiggy</span>
+        <span class="bg-red-500/30 border border-red-400/30 text-red-200 text-xs px-3 py-1 rounded-full">🔴 Zomato</span>
+        <span class="bg-green-500/30 border border-green-400/30 text-green-200 text-xs px-3 py-1 rounded-full">🟢 Official</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+    {% if error %}
+    <div class="bg-red-50 border border-red-200 rounded-2xl p-4 mb-6 text-red-600 text-sm">{{ error }}</div>
+    {% endif %}
+
+    {% for category, items in menu.items() %}
+    <div class="mb-8 fade-in">
+
+      <!-- Category header -->
+      <div class="flex items-center gap-3 mb-4">
+        <div class="category-badge text-white text-xs font-bold px-3 py-1 rounded-full">{{ category }}</div>
+        <div class="flex-1 h-px bg-orange-200"></div>
+        <span class="text-gray-400 text-xs">{{ items|length }} items</span>
+      </div>
+
+      <!-- Items grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3" id="category-{{ loop.index }}">
+        {% for item in items %}
+        <a href="{{ url_for('food.food_item_page', brand=brand_key, item_slug=item|lower|replace(' ', '-')) }}"
+           class="menu-item bg-white rounded-2xl px-4 py-3.5 flex items-center justify-between gap-3 shadow-sm border border-orange-100 group"
+           data-item="{{ item|lower }}">
+          <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-xl bg-orange-50 flex items-center justify-center text-lg flex-shrink-0">
+              {% if 'burger' in item.lower() or 'mac' in item.lower() or 'maharaja' in item.lower() %}🍔
+              {% elif 'pizza' in item.lower() or 'margherita' in item.lower() %}🍕
+              {% elif 'fries' in item.lower() or 'wedges' in item.lower() %}🍟
+              {% elif 'coke' in item.lower() or 'pepsi' in item.lower() or 'sprite' in item.lower() or '7up' in item.lower() or 'fanta' in item.lower() %}🥤
+              {% elif 'shake' in item.lower() or 'mcflurry' in item.lower() or 'dessert' in item.lower() or 'cake' in item.lower() or 'mousse' in item.lower() %}🍰
+              {% elif 'chicken' in item.lower() or 'mcnugget' in item.lower() or 'wing' in item.lower() %}🍗
+              {% elif 'wrap' in item.lower() %}🌯
+              {% elif 'bread' in item.lower() or 'garlic' in item.lower() %}🥖
+              {% elif 'pasta' in item.lower() %}🍝
+              {% elif 'coffee' in item.lower() or 'cappuccino' in item.lower() or 'latte' in item.lower() %}☕
+              {% elif 'cone' in item.lower() %}🍦
+              {% elif 'coleslaw' in item.lower() %}🥗
+              {% else %}🍽️{% endif %}
+            </div>
+            <span class="font-medium text-gray-800 text-sm">{{ item }}</span>
+          </div>
+          <div class="flex items-center gap-1 text-orange-500 flex-shrink-0">
+            <span class="text-xs font-medium hidden sm:block">Compare</span>
+            <svg class="w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+          </div>
+        </a>
+        {% endfor %}
+      </div>
+
+    </div>
+    {% endfor %}
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-gray-400 py-8 px-4 mt-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center text-xs">
+      <span>© 2025 CostShot — Food prices may vary by location</span>
+      <a href="/food" class="hover:text-white transition">← All Brands</a>
+    </div>
+  </footer>
+
+  <script>
+    // Live menu search
+    const searchInput = document.getElementById('menu-search');
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase();
+      document.querySelectorAll('[data-item]').forEach(item => {
+        const name = item.dataset.item;
+        item.style.display = name.includes(q) ? '' : 'none';
+      });
+    });
+
+    // Animate items on scroll
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+          e.target.style.animationDelay = `${i * 0.05}s`;
+          e.target.style.opacity = '1';
+          observer.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
 
 </body>
 </html>

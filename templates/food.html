@@ -1,145 +1,174 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>Food Price Comparison | Across the Tags</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta
-    name="description"
-    content="Compare food prices across popular brands like McDonald's, Pizza Hut, and Domino's."
-  >
-
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Food Price Comparison — CostShot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
   <style>
-    body {
-      background: linear-gradient(135deg, #e0f7fa, #ffffff);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-      color: #333;
+    * { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3,.font-display { font-family: 'Syne', sans-serif; }
+    .food-hero {
+      background: radial-gradient(ellipse at 20% 50%, rgba(251,146,60,0.4) 0%, transparent 60%),
+                  radial-gradient(ellipse at 80% 20%, rgba(239,68,68,0.3) 0%, transparent 50%),
+                  radial-gradient(ellipse at 60% 90%, rgba(234,179,8,0.2) 0%, transparent 50%),
+                  linear-gradient(135deg, #1c0a00 0%, #3b1200 50%, #1c0a00 100%);
     }
-
-    .page-title {
-      text-align: center;
-      font-size: 30px;
-      font-weight: 700;
-      color: #2563eb;
-      margin: 30px 0;
-    }
-
-    /* Brand grid */
-    .food-brand-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 20px;
-    }
-
-    .food-brand-card {
-      position: relative;
-      height: 220px;
-      border-radius: 18px;
-      overflow: hidden;
-      text-decoration: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      display: block;
-    }
-
-    .food-brand-card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 14px 40px rgba(0,0,0,0.25);
-    }
-
-    /* Keyboard accessibility */
-    .food-brand-card:focus-visible {
-      outline: 3px solid #2563eb;
-      outline-offset: 3px;
-    }
-
-    .food-brand-card img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      background: #ffffff;
-    }
-
-    .food-brand-card::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.45);
-    }
-
-    .food-brand-card h3 {
-      position: absolute;
-      bottom: 16px;
-      left: 16px;
-      color: #fff;
-      font-size: 22px;
-      font-weight: 600;
-      margin: 0;
-      z-index: 2;
-    }
+    .navbar-glass { backdrop-filter:blur(18px); background:rgba(28,10,0,0.85); border-bottom:1px solid rgba(255,255,255,0.08); }
+    .brand-card { transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), box-shadow 0.3s ease; }
+    .brand-card:hover { transform: translateY(-10px) scale(1.02); box-shadow: 0 24px 60px rgba(251,146,60,0.3); }
+    .brand-card:hover .brand-overlay { opacity: 0.3; }
+    .brand-overlay { transition: opacity 0.3s; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+    .fade-up { animation: fadeUp 0.6s ease forwards; opacity:0; }
+    .d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s} .d4{animation-delay:.4s}
+    @keyframes pulseDot { 0%,100%{transform:scale(1);} 50%{transform:scale(1.5);opacity:0.6;} }
+    .pulse { animation: pulseDot 2s infinite; }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#F97316; border-radius:4px; }
   </style>
 </head>
+<body class="bg-orange-50 antialiased">
 
-<body>
+  <!-- NAVBAR -->
+  <nav class="navbar-glass fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-4">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+          <span class="text-white font-bold text-sm" style="font-family:Syne">CS</span>
+        </div>
+        <span class="text-white font-bold text-xl hidden sm:block" style="font-family:Syne">CostShot</span>
+      </a>
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-white/60 hover:text-white text-sm transition flex items-center gap-1">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          <span class="hidden sm:block">Home</span>
+        </a>
+        <div class="flex items-center gap-1.5">
+          <div class="w-2 h-2 rounded-full bg-orange-400 pulse"></div>
+          <span class="text-white/50 text-xs hidden sm:block">Live prices</span>
+        </div>
+      </div>
+    </div>
+  </nav>
 
-<div class="container py-4">
+  <!-- HERO -->
+  <section class="food-hero relative min-h-[420px] flex flex-col items-center justify-center px-4 pt-24 pb-12 overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-80 h-80 rounded-full bg-orange-500/20 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-20 -left-20 w-72 h-72 rounded-full bg-red-500/15 blur-3xl pointer-events-none"></div>
 
-  <!-- Back to Home -->
-  <a
-    href="/"
-    class="btn btn-link mb-3"
-    aria-label="Back to home page"
-  >
-    ← Back to Home
-  </a>
+    <div class="fade-up d1 mb-4 inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5">
+      <span class="text-lg">🍔</span>
+      <span class="text-white/80 text-xs font-medium">Compare food prices across Swiggy, Zomato & Official</span>
+    </div>
 
-  <div class="page-title">Food Price Comparison</div>
+    <h1 class="fade-up d2 text-4xl sm:text-6xl font-bold text-white text-center leading-tight max-w-2xl" style="font-family:Syne">
+      Food Prices,
+      <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400"> Compared.</span>
+    </h1>
+    <p class="fade-up d3 mt-4 text-white/60 text-center max-w-lg">
+      Find the cheapest way to order from McDonald's, Pizza Hut & Domino's — across Swiggy, Zomato and official apps.
+    </p>
 
-  <!-- Brand Grid -->
-  <section
-    class="food-brand-grid"
-    aria-label="Food brands"
-  >
-
-    <!-- McDonald's -->
-    <a href="/food/mcdonalds" class="food-brand-card">
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/4/4b/McDonald%27s_logo.svg"
-        alt="McDonald's"
-        loading="lazy"
-      >
-      <h3>McDonald's</h3>
-    </a>
-
-    <!-- Pizza Hut -->
-    <a href="/food/pizzahut" class="food-brand-card">
-      <img
-        src="{{ url_for('static', filename='images/food/pizza.jpg') }}"
-        alt="Pizza Hut"
-        loading="lazy"
-      >
-      <h3>Pizza Hut</h3>
-    </a>
-
-    <!-- Domino's -->
-    <a href="/food/dominos" class="food-brand-card">
-      <img
-        src="https://upload.wikimedia.org/wikipedia/commons/7/74/Dominos_pizza_logo.svg"
-        alt="Domino's Pizza"
-        loading="lazy"
-      >
-      <h3>Domino's</h3>
-    </a>
-
+    <!-- Stats -->
+    <div class="fade-up d4 mt-10 grid grid-cols-3 gap-8 max-w-sm w-full text-center">
+      <div><div class="text-2xl font-bold text-white" style="font-family:Syne">3+</div><div class="text-white/40 text-xs mt-1">Brands</div></div>
+      <div><div class="text-2xl font-bold text-white" style="font-family:Syne">80+</div><div class="text-white/40 text-xs mt-1">Items</div></div>
+      <div><div class="text-2xl font-bold text-white" style="font-family:Syne">3</div><div class="text-white/40 text-xs mt-1">Platforms</div></div>
+    </div>
   </section>
 
-</div>
+  <!-- BRANDS GRID -->
+  <section class="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <div class="text-center mb-10">
+      <h2 class="text-3xl font-bold text-gray-900" style="font-family:Syne">Choose a Brand</h2>
+      <p class="text-gray-500 mt-2">Select a restaurant to browse their menu and compare prices</p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+
+      <!-- McDonald's -->
+      <a href="/food/mcdonalds" class="brand-card relative h-64 rounded-3xl overflow-hidden block shadow-xl">
+        <div class="absolute inset-0 bg-gradient-to-br from-yellow-400 to-red-500"></div>
+        <div class="brand-overlay absolute inset-0 bg-black opacity-40"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+          <div class="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-xl">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/4/4b/McDonald%27s_logo.svg" alt="McDonald's" class="w-14 h-14 object-contain"/>
+          </div>
+          <h3 class="text-white font-bold text-2xl" style="font-family:Syne">McDonald's</h3>
+          <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/30">View Menu →</span>
+        </div>
+      </a>
+
+      <!-- Pizza Hut -->
+      <a href="/food/pizzahut" class="brand-card relative h-64 rounded-3xl overflow-hidden block shadow-xl">
+        <div class="absolute inset-0 bg-gradient-to-br from-red-600 to-red-900"></div>
+        <div class="brand-overlay absolute inset-0 bg-black opacity-40"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+          <div class="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-xl p-2">
+            <div class="text-5xl">🍕</div>
+          </div>
+          <h3 class="text-white font-bold text-2xl" style="font-family:Syne">Pizza Hut</h3>
+          <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/30">View Menu →</span>
+        </div>
+      </a>
+
+      <!-- Domino's -->
+      <a href="/food/dominos" class="brand-card relative h-64 rounded-3xl overflow-hidden block shadow-xl">
+        <div class="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-800"></div>
+        <div class="brand-overlay absolute inset-0 bg-black opacity-40"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center gap-3 z-10">
+          <div class="w-20 h-20 rounded-2xl bg-white flex items-center justify-center shadow-xl">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/7/74/Dominos_pizza_logo.svg" alt="Domino's" class="w-14 h-14 object-contain"/>
+          </div>
+          <h3 class="text-white font-bold text-2xl" style="font-family:Syne">Domino's</h3>
+          <span class="bg-white/20 backdrop-blur-sm text-white text-xs px-3 py-1 rounded-full border border-white/30">View Menu →</span>
+        </div>
+      </a>
+
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="bg-gradient-to-r from-orange-500 to-red-500 py-12 px-4">
+    <div class="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">🍽️</div>
+        <div class="font-bold text-white" style="font-family:Syne">Pick a Brand</div>
+        <div class="text-white/70 text-sm">Choose from McDonald's, Pizza Hut or Domino's</div>
+      </div>
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">🔍</div>
+        <div class="font-bold text-white" style="font-family:Syne">Select an Item</div>
+        <div class="text-white/70 text-sm">Browse the full menu and pick what you want</div>
+      </div>
+      <div class="flex flex-col items-center gap-3">
+        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center text-2xl">💰</div>
+        <div class="font-bold text-white" style="font-family:Syne">Compare & Save</div>
+        <div class="text-white/70 text-sm">See prices on Swiggy, Zomato & Official side by side</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-gray-400 py-8 px-4">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
+      <div class="flex items-center gap-2">
+        <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+          <span class="text-white font-bold text-xs">CS</span>
+        </div>
+        <span class="text-gray-300 font-medium">CostShot Food</span>
+        <span class="text-gray-600">— Compare food prices</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <a href="/" class="hover:text-white transition">Home</a>
+        <a href="/food/mcdonalds" class="hover:text-white transition">McDonald's</a>
+        <a href="/food/pizzahut" class="hover:text-white transition">Pizza Hut</a>
+        <a href="/food/dominos" class="hover:text-white transition">Domino's</a>
+      </div>
+    </div>
+  </footer>
 
 </body>
 </html>

@@ -1,210 +1,274 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>
-    {{ item_name }} Price Comparison in {{ city|capitalize }} | Across the Tags
-  </title>
-
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-
-  <meta
-    name="description"
-    content="Compare {{ item_name }} prices across multiple platforms in {{ city|capitalize }}."
-  >
-
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  >
-
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{{ item_name }} Price Comparison — CostShot Food</title>
+  <meta name="description" content="Compare {{ item_name }} prices across Swiggy, Zomato and Official in {{ city|capitalize }}."/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
   <style>
-    body {
-      background: linear-gradient(135deg, #e0f7fa, #ffffff);
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    * { font-family: 'DM Sans', sans-serif; }
+    h1,h2,h3 { font-family: 'Syne', sans-serif; }
+    .navbar-glass { backdrop-filter:blur(18px); background:rgba(28,10,0,0.88); border-bottom:1px solid rgba(255,255,255,0.08); }
+    .brand-hero { background: linear-gradient(135deg, #3b1200 0%, #7c2d12 50%, #3b1200 100%); }
+    .platform-card {
+      transition: transform 0.25s cubic-bezier(.34,1.56,.64,1), box-shadow 0.25s ease;
     }
-
-    .item-title {
-      text-align: center;
-      font-size: 28px;
-      font-weight: 700;
-      color: #2563eb;
-      margin: 30px 0;
-    }
-
-    .compare-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 18px;
-      margin-bottom: 15px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .platform {
-      font-weight: 600;
-    }
-
-    .price {
-      font-size: 20px;
-      font-weight: 700;
-      color: #16a34a;
-      white-space: nowrap;
-    }
-
-    .price.na {
-      color: #6c757d;
-      font-weight: 600;
-    }
-
-    @media (max-width: 576px) {
-      .compare-card {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-    }
+    .platform-card:hover { transform: translateY(-6px); box-shadow: 0 16px 40px rgba(0,0,0,0.15); }
+    .cheapest-ring { box-shadow: 0 0 0 3px #22C55E, 0 8px 32px rgba(34,197,94,0.25); }
+    .price-num { font-family: 'Syne', sans-serif; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
+    .fade-up { animation: fadeUp 0.5s ease forwards; opacity:0; }
+    .d1{animation-delay:.1s} .d2{animation-delay:.2s} .d3{animation-delay:.3s}
+    select:focus { outline:none; box-shadow: 0 0 0 3px rgba(249,115,22,0.3); }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#F97316; border-radius:4px; }
   </style>
 </head>
+<body class="bg-orange-50 antialiased">
 
-<body>
-
-<div class="container py-3">
-
-  <!-- Back -->
-  <a
-    href="/food/{{ brand }}"
-    class="btn btn-link mb-3"
-    aria-label="Back to brand menu"
-  >
-    ← Back to Menu
-  </a>
-
-  <!-- CITY SELECTION -->
-  <form method="get" class="text-center mb-4">
-
-    <!-- Preserve context -->
-    <input type="hidden" name="brand" value="{{ brand }}">
-    <input type="hidden" name="item" value="{{ item_name }}">
-
-    <label
-      for="city"
-      id="city-label"
-      class="me-2 fw-semibold"
-    >
-      Select City:
-    </label>
-
-    <select
-      id="city"
-      name="city"
-      aria-labelledby="city-label"
-      class="form-select d-inline-block w-auto"
-    >
-      <option value="bangalore" {% if city == 'bangalore' %}selected{% endif %}>
-        Bangalore
-      </option>
-      <option value="mumbai" {% if city == 'mumbai' %}selected{% endif %}>
-        Mumbai
-      </option>
-      <option value="delhi" {% if city == 'delhi' %}selected{% endif %}>
-        Delhi
-      </option>
-    </select>
-
-    <button class="btn btn-outline-primary btn-sm ms-2">
-      Update
-    </button>
-  </form>
-
-  <!-- ITEM TITLE -->
-  <div class="item-title">{{ item_name }}</div>
-
-  <!-- OFFICIAL -->
-  <div class="compare-card">
-    <div class="platform">Official Site</div>
-
-    {% if prices.official %}
-      <div class="price">₹{{ prices.official }}</div>
-    {% else %}
-      <div class="price na">N/A</div>
-    {% endif %}
-
-    {% if buy_links.official %}
-      <a
-        href="{{ buy_links.official }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-success btn-sm"
-      >
-        Buy
+  <!-- NAVBAR -->
+  <nav class="navbar-glass fixed top-0 left-0 right-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16 gap-4">
+      <a href="/" class="flex items-center gap-2">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+          <span class="text-white font-bold text-sm" style="font-family:Syne">CS</span>
+        </div>
+        <span class="text-white font-bold text-xl hidden sm:block" style="font-family:Syne">CostShot</span>
       </a>
-    {% else %}
-      <button class="btn btn-secondary btn-sm" disabled aria-disabled="true">
-        Unavailable
-      </button>
-    {% endif %}
+      <a href="/food/{{ brand }}" class="text-white/60 hover:text-white text-sm transition flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <span class="hidden sm:block">Back to Menu</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="brand-hero pt-16">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 py-8">
+
+      <!-- Breadcrumb -->
+      <div class="flex items-center gap-2 text-white/50 text-xs mb-4 flex-wrap">
+        <a href="/" class="hover:text-white transition">Home</a>
+        <span>/</span>
+        <a href="/food" class="hover:text-white transition">Food</a>
+        <span>/</span>
+        <a href="/food/{{ brand }}" class="hover:text-white transition">{{ brand_name }}</a>
+        <span>/</span>
+        <span class="text-white/80">{{ item_name }}</span>
+      </div>
+
+      <!-- Item title -->
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-white/15 backdrop-blur-sm flex items-center justify-center text-4xl flex-shrink-0">
+          {% if 'burger' in item_name.lower() or 'mac' in item_name.lower() %}🍔
+          {% elif 'pizza' in item_name.lower() or 'margherita' in item_name.lower() %}🍕
+          {% elif 'fries' in item_name.lower() %}🍟
+          {% elif 'coke' in item_name.lower() or 'pepsi' in item_name.lower() or 'sprite' in item_name.lower() %}🥤
+          {% elif 'cake' in item_name.lower() or 'mcflurry' in item_name.lower() or 'mousse' in item_name.lower() %}🍰
+          {% elif 'chicken' in item_name.lower() or 'nugget' in item_name.lower() %}🍗
+          {% elif 'wrap' in item_name.lower() %}🌯
+          {% elif 'bread' in item_name.lower() or 'garlic' in item_name.lower() %}🥖
+          {% elif 'pasta' in item_name.lower() %}🍝
+          {% elif 'coffee' in item_name.lower() or 'cappuccino' in item_name.lower() %}☕
+          {% else %}🍽️{% endif %}
+        </div>
+        <div>
+          <h1 class="text-2xl sm:text-3xl font-bold text-white" style="font-family:Syne">{{ item_name }}</h1>
+          <p class="text-white/60 text-sm mt-1">{{ brand_name }} — Price comparison</p>
+        </div>
+      </div>
+
+      <!-- City selector -->
+      <form method="get" class="mt-5 flex items-center gap-3 flex-wrap">
+        <label class="text-white/70 text-sm font-medium">📍 City:</label>
+        <select name="city" onchange="this.form.submit()"
+          class="bg-white/15 border border-white/20 text-white rounded-xl px-4 py-2 text-sm backdrop-blur-sm">
+          <option value="bangalore" {% if city == 'bangalore' %}selected{% endif %}>Bangalore</option>
+          <option value="mumbai"    {% if city == 'mumbai'    %}selected{% endif %}>Mumbai</option>
+          <option value="delhi"     {% if city == 'delhi'     %}selected{% endif %}>Delhi</option>
+        </select>
+        <span class="text-white/40 text-xs">Prices may vary by city</span>
+      </form>
+
+    </div>
   </div>
 
-  <!-- SWIGGY -->
-  <div class="compare-card">
-    <div class="platform">Swiggy</div>
+  <!-- PRICE COMPARISON CARDS -->
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 py-10">
 
-    {% if prices.swiggy %}
-      <div class="price">₹{{ prices.swiggy }}</div>
-    {% else %}
-      <div class="price na">N/A</div>
+    {% set all_prices = [prices.official, prices.swiggy, prices.zomato] | select('number') | list %}
+    {% set min_price = all_prices | min if all_prices else 0 %}
+
+    <h2 class="text-xl font-bold text-gray-900 mb-6" style="font-family:Syne">
+      Compare Prices in {{ city|capitalize }}
+    </h2>
+
+    <div class="space-y-4">
+
+      <!-- OFFICIAL -->
+      <div class="fade-up d1 platform-card bg-white rounded-2xl p-5 flex items-center justify-between gap-4 shadow-md border border-orange-100
+        {% if prices.official and prices.official == min_price %}cheapest-ring{% endif %}">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center text-2xl flex-shrink-0">🟢</div>
+          <div>
+            <div class="font-bold text-gray-900">Official App</div>
+            <div class="text-gray-500 text-xs mt-0.5">Order directly from {{ brand_name }}</div>
+            {% if prices.official and prices.official == min_price %}
+            <span class="inline-block bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">Cheapest ✓</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          {% if prices.official %}
+          <div class="price-num text-2xl font-bold text-green-500">₹{{ prices.official }}</div>
+          {% if buy_links.official %}
+          <a href="{{ buy_links.official }}" target="_blank" rel="noopener noreferrer"
+            class="inline-block mt-2 bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-4 py-1.5 rounded-xl transition">
+            Order →
+          </a>
+          {% endif %}
+          {% else %}
+          <div class="text-gray-400 font-semibold">N/A</div>
+          <button class="mt-2 bg-gray-100 text-gray-400 text-xs px-4 py-1.5 rounded-xl" disabled>Unavailable</button>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- SWIGGY -->
+      <div class="fade-up d2 platform-card bg-white rounded-2xl p-5 flex items-center justify-between gap-4 shadow-md border border-orange-100
+        {% if prices.swiggy and prices.swiggy == min_price %}cheapest-ring{% endif %}">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl flex-shrink-0">🟠</div>
+          <div>
+            <div class="font-bold text-gray-900">Swiggy</div>
+            <div class="text-gray-500 text-xs mt-0.5">Fast delivery, exclusive offers</div>
+            {% if prices.swiggy and prices.swiggy == min_price %}
+            <span class="inline-block bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">Cheapest ✓</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          {% if prices.swiggy %}
+          <div class="price-num text-2xl font-bold text-orange-500">₹{{ prices.swiggy }}</div>
+          {% if buy_links.swiggy %}
+          <a href="{{ buy_links.swiggy }}" target="_blank" rel="noopener noreferrer"
+            class="inline-block mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold px-4 py-1.5 rounded-xl transition">
+            Order →
+          </a>
+          {% endif %}
+          {% else %}
+          <div class="text-gray-400 font-semibold">N/A</div>
+          <button class="mt-2 bg-gray-100 text-gray-400 text-xs px-4 py-1.5 rounded-xl" disabled>Unavailable</button>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- ZOMATO -->
+      <div class="fade-up d3 platform-card bg-white rounded-2xl p-5 flex items-center justify-between gap-4 shadow-md border border-orange-100
+        {% if prices.zomato and prices.zomato == min_price %}cheapest-ring{% endif %}">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-red-50 flex items-center justify-center text-2xl flex-shrink-0">🔴</div>
+          <div>
+            <div class="font-bold text-gray-900">Zomato</div>
+            <div class="text-gray-500 text-xs mt-0.5">Wide restaurant network</div>
+            {% if prices.zomato and prices.zomato == min_price %}
+            <span class="inline-block bg-green-100 text-green-600 text-[10px] font-bold px-2 py-0.5 rounded-full mt-1">Cheapest ✓</span>
+            {% endif %}
+          </div>
+        </div>
+        <div class="text-right flex-shrink-0">
+          {% if prices.zomato %}
+          <div class="price-num text-2xl font-bold text-red-500">₹{{ prices.zomato }}</div>
+          {% if buy_links.zomato %}
+          <a href="{{ buy_links.zomato }}" target="_blank" rel="noopener noreferrer"
+            class="inline-block mt-2 bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-4 py-1.5 rounded-xl transition">
+            Order →
+          </a>
+          {% endif %}
+          {% else %}
+          <div class="text-gray-400 font-semibold">N/A</div>
+          <button class="mt-2 bg-gray-100 text-gray-400 text-xs px-4 py-1.5 rounded-xl" disabled>Unavailable</button>
+          {% endif %}
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SAVINGS CALLOUT -->
+    {% if all_prices | length > 1 %}
+    {% set max_price = all_prices | max %}
+    {% if max_price > min_price %}
+    <div class="mt-6 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+      <div class="text-3xl">💰</div>
+      <div>
+        <div class="font-bold text-green-700">You save ₹{{ max_price - min_price }} by choosing the cheapest option!</div>
+        <div class="text-gray-500 text-xs mt-0.5">vs the most expensive platform for {{ item_name }}</div>
+      </div>
+    </div>
+    {% endif %}
     {% endif %}
 
-    {% if buy_links.swiggy %}
-      <a
-        href="{{ buy_links.swiggy }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-warning btn-sm"
-      >
-        Buy
-      </a>
-    {% else %}
-      <button class="btn btn-secondary btn-sm" disabled aria-disabled="true">
-        Unavailable
-      </button>
-    {% endif %}
+    <!-- PRICE TABLE -->
+    <div class="mt-8 bg-white rounded-2xl shadow-md overflow-hidden border border-orange-100">
+      <div class="p-4 border-b border-orange-100 bg-orange-50">
+        <h3 class="font-bold text-gray-900" style="font-family:Syne">Full Price Breakdown</h3>
+      </div>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-gray-100">
+            <th class="text-left py-3 px-4 text-gray-500 font-medium">Platform</th>
+            <th class="text-right py-3 px-4 text-gray-500 font-medium">Price</th>
+            <th class="text-right py-3 px-4 text-gray-500 font-medium">vs Cheapest</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for platform, price, color in [
+            ('🟢 Official', prices.official, 'text-green-500'),
+            ('🟠 Swiggy',   prices.swiggy,   'text-orange-500'),
+            ('🔴 Zomato',   prices.zomato,   'text-red-500'),
+          ] %}
+          <tr class="border-b border-gray-50 hover:bg-orange-50 transition {% if price and price == min_price %}bg-green-50/50{% endif %}">
+            <td class="py-3 px-4 font-medium text-gray-700">
+              {{ platform }}
+              {% if price and price == min_price %}
+              <span class="ml-1 bg-green-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">Best</span>
+              {% endif %}
+            </td>
+            <td class="py-3 px-4 text-right font-bold {{ color }}">
+              {% if price %}₹{{ price }}{% else %}<span class="text-gray-400">N/A</span>{% endif %}
+            </td>
+            <td class="py-3 px-4 text-right text-xs">
+              {% if price %}
+                {% if price == min_price %}
+                <span class="text-green-500 font-semibold">Best Price ✓</span>
+                {% else %}
+                <span class="text-red-400">+₹{{ price - min_price }}</span>
+                {% endif %}
+              {% else %}
+              <span class="text-gray-400">—</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-center text-gray-400 text-xs mt-4">
+      Prices may vary by location and time. Always check the app before ordering.
+    </p>
+
   </div>
 
-  <!-- ZOMATO -->
-  <div class="compare-card">
-    <div class="platform">Zomato</div>
-
-    {% if prices.zomato %}
-      <div class="price">₹{{ prices.zomato }}</div>
-    {% else %}
-      <div class="price na">N/A</div>
-    {% endif %}
-
-    {% if buy_links.zomato %}
-      <a
-        href="{{ buy_links.zomato }}"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-danger btn-sm"
-      >
-        Buy
-      </a>
-    {% else %}
-      <button class="btn btn-secondary btn-sm" disabled aria-disabled="true">
-        Unavailable
-      </button>
-    {% endif %}
-  </div>
-
-  <p class="text-center mt-3 text-muted">
-    Prices may vary by location. Availability depends on platform coverage.
-  </p>
-
-</div>
+  <!-- FOOTER -->
+  <footer class="bg-gray-900 text-gray-400 py-8 px-4">
+    <div class="max-w-7xl mx-auto flex justify-between items-center text-xs">
+      <span>© 2025 CostShot — Food prices are approximate</span>
+      <a href="/food/{{ brand }}" class="hover:text-white transition">← Back to {{ brand_name }} Menu</a>
+    </div>
+  </footer>
 
 </body>
 </html>
