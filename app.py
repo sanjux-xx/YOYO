@@ -346,10 +346,11 @@ def index():
 def category_page(category_name):
 
     category_rules = {
-        "mobiles": "mobile phone",
-        "laptops": "laptop",
-        "fruits": "fresh fruits",
-        "groceries": "grocery items"
+    "mobiles": "mobile phone",
+    "laptops": "laptop",
+    "fruits": "fresh fruits",
+    "groceries": "grocery items",
+    "medicine": "medicine tablets online India"
     }
 
     if category_name not in category_rules:

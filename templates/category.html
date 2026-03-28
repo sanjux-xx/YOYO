@@ -98,7 +98,7 @@
           <span class="text-white/80">{{ category|title }}</span>
         </div>
         <h1 class="font-display text-3xl font-bold text-white">
-          {% if category == 'mobiles' %}📱{% elif category == 'laptops' %}💻{% elif category == 'groceries' %}🛒{% elif category == 'fruits' %}🍎{% else %}🔍{% endif %}
+          {% if category == 'mobiles' %}📱{% elif category == 'laptops' %}💻{% elif category == 'groceries' %}🛒{% elif category == 'fruits' %}🍎{% elif category == 'medicine' %}💊{% else %}🔍{% endif %}
           {{ category|title }}
         </h1>
         {% if products %}
@@ -400,6 +400,7 @@
         <a href="/" class="hover:text-white transition">Home</a>
         <a href="/category/mobiles" class="hover:text-white transition">Mobiles</a>
         <a href="/category/laptops" class="hover:text-white transition">Laptops</a>
+        <a href="/category/medicine" class="hover:text-white transition">Medicine</a>
         <div class="flex items-center gap-1 text-gray-500">
           <span class="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot"></span>
           Prices live
