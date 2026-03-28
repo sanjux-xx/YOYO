@@ -40,9 +40,9 @@ app.register_blueprint(food_bp)
 # ===============================
 # SECURITY / RATE LIMIT
 # ===============================
-RATE_LIMIT = 10
+RATE_LIMIT = 50
 WINDOW_SIZE = 60
-BLOCK_TIME = 15 * 60
+BLOCK_TIME = 2 * 60
 CACHE_TTL = 20 * 60
 
 request_log = defaultdict(list)
@@ -306,6 +306,8 @@ def rate_limit():
     # Skip rate limiting for health check
     if request.path == "/health":
         return None
+    if request.path.startswith("/static"):
+       return None
 
     ip = get_client_ip()
     now = time.time()
