@@ -316,11 +316,37 @@ def rate_limit():
         if now < blocked_until:
             retry_after = int(blocked_until - now)
             logging.warning(f"Blocked IP tried again: {ip}")
-            return (
-                f"<h2>Too Many Requests</h2>"
-                f"<p>You have been temporarily blocked. Try again in {retry_after // 60} min {retry_after % 60} sec.</p>",
-                429
-            )
+            return f"""
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blocked — CostShot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 min-h-screen flex items-center justify-center px-4">
+  <div class="text-center max-w-md">
+    <div class="text-7xl mb-6">⏳</div>
+    <h1 class="text-3xl font-bold text-white mb-3">Slow Down!</h1>
+    <p class="text-gray-400 mb-6">Too many requests. Try again in:</p>
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl px-8 py-5 mb-6">
+      <div class="text-4xl font-bold text-orange-400" id="cd">{retry_after // 60}m {retry_after % 60}s</div>
+    </div>
+    <p class="text-gray-600 text-xs">CostShot limits 10 requests/min for everyone.</p>
+  </div>
+  <script>
+    let s = {retry_after};
+    const e = document.getElementById('cd');
+    setInterval(() => {{
+      s--;
+      if (s <= 0) {{ location.reload(); return; }}
+      e.textContent = Math.floor(s/60) + 'm ' + s%60 + 's';
+    }}, 1000);
+  </script>
+</body>
+</html>
+""", 429
         else:
             # Block expired — clear it
             del blocked_ips[ip]
@@ -333,11 +359,38 @@ def rate_limit():
     if len(request_log[ip]) >= RATE_LIMIT:
         blocked_ips[ip] = now + BLOCK_TIME
         logging.warning(f"IP blocked for exceeding rate limit: {ip}")
-        return (
-            "<h2>Too Many Requests</h2>"
-            "<p>You have made too many requests. You are blocked for 15 minutes.</p>",
-            429
-        )
+        
+    return f"""
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Blocked — CostShot</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-950 min-h-screen flex items-center justify-center px-4">
+  <div class="text-center max-w-md">
+    <div class="text-7xl mb-6">🚫</div>
+    <h1 class="text-3xl font-bold text-white mb-3">Too Many Requests</h1>
+    <p class="text-gray-400 mb-6">You are blocked for 15 minutes.</p>
+    <div class="bg-gray-900 border border-gray-800 rounded-2xl px-8 py-5 mb-6">
+      <div class="text-4xl font-bold text-red-400" id="cd">15m 0s</div>
+    </div>
+    <p class="text-gray-600 text-xs">CostShot limits 10 requests/min for everyone.</p>
+  </div>
+  <script>
+    let s = {BLOCK_TIME};
+    const e = document.getElementById('cd');
+    setInterval(() => {{
+      s--;
+      if (s <= 0) {{ location.reload(); return; }}
+      e.textContent = Math.floor(s/60) + 'm ' + s%60 + 's';
+    }}, 1000);
+  </script>
+</body>
+</html>
+""", 429
 
     # Log this request
     request_log[ip].append(now)
