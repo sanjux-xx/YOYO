@@ -283,7 +283,7 @@
         {'name':'Food',      'url':'food',      'icon':'🍔', 'color':'from-orange-400 to-red-500',    'bg':'bg-orange-50'},
         {'name':'Medicine', 'url':'medicine',   'icon':'💊', 'color':'from-cyan-400 to-blue-500',     'bg':'bg-cyan-50'},
       ] %}
-      <a href="/category/{{ cat.url }}" class="cat-card {{ cat.bg }} rounded-2xl p-5 flex flex-col items-center gap-3 shadow-card border border-white">
+      <a href="{% if cat.url == 'food' %}/food{% else %}/category/{{ cat.url }}{% endif %}" class="cat-card {{ cat.bg }} rounded-2xl p-5 flex flex-col items-center gap-3 shadow-card border border-white">
         <div class="w-14 h-14 rounded-2xl bg-gradient-to-br {{ cat.color }} flex items-center justify-center text-2xl shadow-md">{{ cat.icon }}</div>
         <span class="font-semibold text-gray-700 text-sm text-center">{{ cat.name }}</span>
       </a>
