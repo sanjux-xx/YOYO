@@ -375,7 +375,7 @@ def index():
     )
 
 
-@app.route("/category/<category_name>", methods=["GET", "POST"])
+
 def medicine_filter(products, query):
     if not products:
         return products
@@ -432,6 +432,8 @@ def medicine_filter(products, query):
         ]
 
     return filtered if filtered else products
+
+@app.route("/category/<category_name>", methods=["GET", "POST"])
 
 def category_page(category_name):
 
