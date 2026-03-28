@@ -86,17 +86,12 @@ def step1_strict_filter(products, query):
     q_words = query.lower().split()
 
     BLOCK_WORDS = [
-        # accessories
         "case", "cover", "back cover", "skin",
         "tempered", "glass", "screen protector",
         "charger", "cable", "adapter",
         "holder", "stand", "mount",
-
-        # resale / fake listings
         "sell", "selling", "used", "second hand",
         "refurbished", "pre owned", "exchange",
-
-        # non-phone junk
         "sports", "jersey", "tshirt", "toy",
         "dummy", "model", "poster", "display"
     ]
@@ -108,20 +103,16 @@ def step1_strict_filter(products, query):
         if not title:
             continue
 
-        # Remove obvious accessories
         if any(b in title for b in BLOCK_WORDS):
             continue
 
-        # Must be an actual phone
         PHONE_KEYWORDS = ["iphone", "mobile", "smartphone"]
         if not any(k in title for k in PHONE_KEYWORDS):
             continue
 
-        # SOFT match: at least ONE query word must appear
         if any(w in title for w in q_words):
             filtered.append(p)
 
-    # CRITICAL fallback to avoid empty results
     return filtered if filtered else products
 
 
@@ -209,7 +200,6 @@ def step3_compare_products(products):
             "link": p.get("link", ""),
         })
 
-    # SORT & PRIORITIZE STORES
     for product in grouped.values():
         preferred = []
         others = []
@@ -299,27 +289,10 @@ def get_product_prices(query):
 
 
 # ===============================
-# RATE LIMITING
+# BLOCK PAGE HTML TEMPLATES
 # ===============================
-@app.before_request
-def rate_limit():
-    # Skip rate limiting for health check
-    if request.path == "/health":
-        return None
-    if request.path.startswith("/static"):
-       return None
-
-    ip = get_client_ip()
-    now = time.time()
-
-    # Check if IP is currently blocked
-    if ip in blocked_ips:
-        blocked_until = blocked_ips[ip]
-        if now < blocked_until:
-            retry_after = int(blocked_until - now)
-            logging.warning(f"Blocked IP tried again: {ip}")
-            return f"""
-<!DOCTYPE html>
+def render_already_blocked_page(retry_after):
+    return f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8"/>
@@ -335,7 +308,7 @@ def rate_limit():
     <div class="bg-gray-900 border border-gray-800 rounded-2xl px-8 py-5 mb-6">
       <div class="text-4xl font-bold text-orange-400" id="cd">{retry_after // 60}m {retry_after % 60}s</div>
     </div>
-    <p class="text-gray-600 text-xs">CostShot limits 10 requests/min for everyone.</p>
+    <p class="text-gray-600 text-xs">CostShot limits requests per minute for everyone.</p>
   </div>
   <script>
     let s = {retry_after};
@@ -347,23 +320,11 @@ def rate_limit():
     }}, 1000);
   </script>
 </body>
-</html>
-""", 429
-        else:
-            # Block expired — clear it
-            del blocked_ips[ip]
-            request_log[ip] = []
+</html>""", 429
 
-    # Clean old requests outside the window
-    request_log[ip] = [t for t in request_log[ip] if now - t < WINDOW_SIZE]
 
-    # Check if over limit
-    if len(request_log[ip]) >= RATE_LIMIT:
-        blocked_ips[ip] = now + BLOCK_TIME
-        logging.warning(f"IP blocked for exceeding rate limit: {ip}")
-        
-    return f"""
-<!DOCTYPE html>
+def render_newly_blocked_page():
+    return f"""<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8"/>
@@ -375,11 +336,11 @@ def rate_limit():
   <div class="text-center max-w-md">
     <div class="text-7xl mb-6">🚫</div>
     <h1 class="text-3xl font-bold text-white mb-3">Too Many Requests</h1>
-    <p class="text-gray-400 mb-6">You are blocked for 15 minutes.</p>
+    <p class="text-gray-400 mb-6">You are blocked for 2 minutes.</p>
     <div class="bg-gray-900 border border-gray-800 rounded-2xl px-8 py-5 mb-6">
-      <div class="text-4xl font-bold text-red-400" id="cd">15m 0s</div>
+      <div class="text-4xl font-bold text-red-400" id="cd">2m 0s</div>
     </div>
-    <p class="text-gray-600 text-xs">CostShot limits 10 requests/min for everyone.</p>
+    <p class="text-gray-600 text-xs">CostShot limits requests per minute for everyone.</p>
   </div>
   <script>
     let s = {BLOCK_TIME};
@@ -391,10 +352,45 @@ def rate_limit():
     }}, 1000);
   </script>
 </body>
-</html>
-""", 429
+</html>""", 429
 
-    # Log this request
+
+# ===============================
+# RATE LIMITING — FIXED
+# ===============================
+@app.before_request
+def rate_limit():
+    # Skip rate limiting for health check and static files
+    if request.path == "/health":
+        return None
+    if request.path.startswith("/static"):
+        return None
+
+    ip = get_client_ip()
+    now = time.time()
+
+    # Check if IP is currently blocked
+    if ip in blocked_ips:
+        blocked_until = blocked_ips[ip]
+        if now < blocked_until:
+            retry_after = int(blocked_until - now)
+            logging.warning(f"Blocked IP tried again: {ip}")
+            return render_already_blocked_page(retry_after)  # ← RETURN here
+        else:
+            # Block expired — clear it
+            del blocked_ips[ip]
+            request_log[ip] = []
+
+    # Clean old requests outside the window
+    request_log[ip] = [t for t in request_log[ip] if now - t < WINDOW_SIZE]
+
+    # Check if over limit — FIXED: return is now INSIDE this if block
+    if len(request_log[ip]) >= RATE_LIMIT:
+        blocked_ips[ip] = now + BLOCK_TIME
+        logging.warning(f"IP blocked for exceeding rate limit: {ip}")
+        return render_newly_blocked_page()  # ← RETURN inside if block
+
+    # Only reached if NOT blocked — log request and allow
     request_log[ip].append(now)
     return None
 
@@ -430,14 +426,15 @@ def index():
     )
 
 
-
+# ===============================
+# MEDICINE FILTER
+# ===============================
 def medicine_filter(products, query):
     if not products:
         return products
 
     q_words = query.lower().replace("buy online india", "").split()
 
-    # Block non-medicine results
     BLOCK_WORDS = [
         "mobile", "phone", "smartphone", "iphone", "samsung",
         "laptop", "tablet", "headphone", "earphone", "charger",
@@ -445,7 +442,6 @@ def medicine_filter(products, query):
         "shirt", "shoe", "toy", "book", "furniture"
     ]
 
-    # Must contain at least one medicine keyword
     MEDICINE_KEYWORDS = [
         "tablet", "capsule", "syrup", "drops", "cream", "gel",
         "ointment", "injection", "sachet", "strip", "mg", "ml",
@@ -461,24 +457,18 @@ def medicine_filter(products, query):
         if not title:
             continue
 
-        # Block if contains non-medicine words
         if any(b in title for b in BLOCK_WORDS):
             continue
 
-        # Allow if store is a pharmacy
         pharmacy_stores = ["1mg", "netmeds", "pharmeasy", "apollo", "medplus", "flipkart health"]
         is_pharmacy = any(ph in store for ph in pharmacy_stores)
 
-        # Allow if title contains medicine keyword OR from pharmacy store
         has_medicine_word = any(k in title for k in MEDICINE_KEYWORDS)
-
-        # Allow if query word appears in title
         query_match = any(w in title for w in q_words if len(w) > 2)
 
         if (has_medicine_word or is_pharmacy) and query_match:
             filtered.append(p)
 
-    # Fallback — if too strict, return anything from pharmacy stores
     if not filtered:
         filtered = [
             p for p in products
@@ -488,16 +478,17 @@ def medicine_filter(products, query):
 
     return filtered if filtered else products
 
+
+# ===============================
+# CATEGORY ROUTE
+# ===============================
 @app.route("/category/<category_name>", methods=["GET", "POST"])
-
 def category_page(category_name):
-
     category_rules = {
         "mobiles":   "mobile phone",
         "laptops":   "laptop",
         "fruits":    "fresh fruits",
         "groceries": "grocery items",
-        # ── MEDICINE: broad default, specific on search ──
         "medicine":  "medicine online India"
     }
 
@@ -509,7 +500,6 @@ def category_page(category_name):
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
 
-        # ── Medicine: use search term directly for precise results ──
         if category_name == "medicine" and search_term:
             final_query = f"{search_term} buy online India"
         else:
@@ -533,6 +523,10 @@ def category_page(category_name):
         products=products
     )
 
+
+# ===============================
+# API ROUTE
+# ===============================
 @app.route("/api/price-check")
 def price_check():
     title = request.args.get("title", "").strip()
@@ -543,7 +537,6 @@ def price_check():
     if not products:
         return {"current_price": None, "link": None}
 
-    # Sort by price and return cheapest
     def safe_price(p):
         try:
             return float(p.get("price", "").replace("₹", "").replace(",", ""))
@@ -563,7 +556,11 @@ def price_check():
         "link": best.get("link", "/"),
         "store": best.get("store", "")
     }
-    
+
+
+# ===============================
+# HEALTH CHECK
+# ===============================
 @app.route("/health")
 def health():
     return {"status": "ok"}
