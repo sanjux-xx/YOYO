@@ -87,9 +87,9 @@ FOOD_DATA = {
             "Maharaja Mac Meal":      {"official": 319, "swiggy": 339, "zomato": 329},
         },
         "buy_links": {
-            "official": "https://mcdelivery.co.in",
-            "swiggy":   "https://www.swiggy.com/restaurants/mcdonalds",
-            "zomato":   "https://www.zomato.com/mcdonalds",
+            "official": "https://mcdelivery.co.in/menu",
+            "swiggy":   "https://www.swiggy.com/search?query=mcdonalds",
+            "zomato":   "https://www.zomato.com/search?q=mcdonalds",
         }
     },
 
@@ -160,10 +160,10 @@ FOOD_DATA = {
             "Mango Cheesecake":             {"official": 129, "swiggy": 149, "zomato": 139},
         },
         "buy_links": {
-            "official": "https://www.pizzahut.co.in",
-            "swiggy":   "https://www.swiggy.com/restaurants/pizza-hut",
-            "zomato":   "https://www.zomato.com/pizza-hut",
-        }
+          "official": "https://www.pizzahut.co.in/orderonline",
+          "swiggy":   "https://www.swiggy.com/search?query=pizza+hut",
+          "zomato":   "https://www.zomato.com/search?q=pizza+hut",
+       }
     },
 
     "dominos": {
@@ -237,10 +237,10 @@ FOOD_DATA = {
             "Butterscotch Mousse Cake":         {"official": 99,  "swiggy": 119, "zomato": 109},
         },
         "buy_links": {
-            "official": "https://www.dominos.co.in",
-            "swiggy":   "https://www.swiggy.com/restaurants/dominos",
-            "zomato":   "https://www.zomato.com/dominos",
-        }
+         "official": "https://www.dominos.co.in/menu",
+          "swiggy":   "https://www.swiggy.com/search?query=dominos",
+          "zomato":   "https://www.zomato.com/search?q=dominos",
+                   }
     },
 }
 
@@ -307,21 +307,27 @@ def get_serpapi_prices(item_name, brand_name):
 
 
 def get_prices_for_item(brand_key, item_name):
-    """
-    Get prices for an item — use hardcoded data as base,
-    try to enrich with SerpAPI live data.
-    """
     brand = FOOD_DATA.get(brand_key, {})
     base_prices = brand.get("prices", {}).get(item_name, {})
+    brand_name = brand.get("name", "")
 
-    # Start with hardcoded prices
+    # Generate item-specific search links
+    item_query = item_name.replace(" ", "+")
+    brand_query = brand_name.replace(" ", "+")
+
+    buy_links = {
+        "official": brand.get("buy_links", {}).get("official", "#"),
+        "swiggy":   f"https://www.swiggy.com/search?query={item_query}+{brand_query}",
+        "zomato":   f"https://www.zomato.com/search?q={item_query}+{brand_query}",
+    }
+
     prices = {
         "official": base_prices.get("official"),
         "swiggy":   base_prices.get("swiggy"),
         "zomato":   base_prices.get("zomato"),
     }
 
-    return prices
+    return prices, buy_links
 
 
 # ===============================
@@ -385,8 +391,7 @@ def food_item_page(brand, item_slug):
         ), 404
 
     item_name = matched
-    prices = get_prices_for_item(brand, item_name)
-    buy_links = brand_data.get("buy_links", {})
+    prices, buy_links = get_prices_for_item(brand, item_name)
 
     # Get selected city (default: bangalore)
     city = request.args.get("city", "bangalore").lower()
