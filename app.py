@@ -376,6 +376,63 @@ def index():
 
 
 @app.route("/category/<category_name>", methods=["GET", "POST"])
+def medicine_filter(products, query):
+    if not products:
+        return products
+
+    q_words = query.lower().replace("buy online india", "").split()
+
+    # Block non-medicine results
+    BLOCK_WORDS = [
+        "mobile", "phone", "smartphone", "iphone", "samsung",
+        "laptop", "tablet", "headphone", "earphone", "charger",
+        "cover", "case", "cable", "watch", "camera",
+        "shirt", "shoe", "toy", "book", "furniture"
+    ]
+
+    # Must contain at least one medicine keyword
+    MEDICINE_KEYWORDS = [
+        "tablet", "capsule", "syrup", "drops", "cream", "gel",
+        "ointment", "injection", "sachet", "strip", "mg", "ml",
+        "medicine", "pharma", "healthcare", "drug", "supplement",
+        "vitamin", "protein", "pain", "relief", "antibiotic"
+    ]
+
+    filtered = []
+    for p in products:
+        title = p.get("title", "").lower()
+        store = p.get("store", "").lower()
+
+        if not title:
+            continue
+
+        # Block if contains non-medicine words
+        if any(b in title for b in BLOCK_WORDS):
+            continue
+
+        # Allow if store is a pharmacy
+        pharmacy_stores = ["1mg", "netmeds", "pharmeasy", "apollo", "medplus", "flipkart health"]
+        is_pharmacy = any(ph in store for ph in pharmacy_stores)
+
+        # Allow if title contains medicine keyword OR from pharmacy store
+        has_medicine_word = any(k in title for k in MEDICINE_KEYWORDS)
+
+        # Allow if query word appears in title
+        query_match = any(w in title for w in q_words if len(w) > 2)
+
+        if (has_medicine_word or is_pharmacy) and query_match:
+            filtered.append(p)
+
+    # Fallback — if too strict, return anything from pharmacy stores
+    if not filtered:
+        filtered = [
+            p for p in products
+            if any(ph in p.get("store", "").lower()
+                   for ph in ["1mg", "netmeds", "pharmeasy", "apollo", "medplus"])
+        ]
+
+    return filtered if filtered else products
+
 def category_page(category_name):
 
     category_rules = {
@@ -408,6 +465,8 @@ def category_page(category_name):
     if category_name == "mobiles":
         products = step1_strict_filter(products, final_query)
         products = step2_group_variants(products)
+    elif category_name == "medicine":
+        products = medicine_filter(products, final_query)
 
     products = sorted(products, key=extract_price)
 
