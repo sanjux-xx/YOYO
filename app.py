@@ -476,7 +476,37 @@ def category_page(category_name):
         products=products
     )
 
+@app.route("/api/price-check")
+def price_check():
+    title = request.args.get("title", "").strip()
+    if not title or len(title) < 3:
+        return {"error": "Invalid query"}, 400
 
+    products = get_product_prices(title)
+    if not products:
+        return {"current_price": None, "link": None}
+
+    # Sort by price and return cheapest
+    def safe_price(p):
+        try:
+            return float(p.get("price", "").replace("₹", "").replace(",", ""))
+        except:
+            return float("inf")
+
+    products_sorted = sorted(products, key=safe_price)
+    best = products_sorted[0]
+
+    try:
+        price = float(best.get("price", "").replace("₹", "").replace(",", ""))
+    except:
+        price = None
+
+    return {
+        "current_price": price,
+        "link": best.get("link", "/"),
+        "store": best.get("store", "")
+    }
+    
 @app.route("/health")
 def health():
     return {"status": "ok"}
