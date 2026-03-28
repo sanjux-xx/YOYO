@@ -51,15 +51,15 @@ cache = {}
 query_counter = defaultdict(list)
 
 
+# ===============================
 # LOGGING
-
-
-
+# ===============================
 logging.basicConfig(level=logging.INFO)
 
 
+# ===============================
 # HELPERS
-
+# ===============================
 def get_client_ip():
     return request.headers.get("CF-Connecting-IP") or request.remote_addr
 
@@ -68,8 +68,6 @@ def extract_price(p):
         return float(p.get("price", "").replace("₹", "").replace(",", ""))
     except:
         return float("inf")
-    
-    
 
 def is_valid_query(q):
     if not q:
@@ -78,8 +76,9 @@ def is_valid_query(q):
     return 3 <= len(q) <= 100
 
 
+# ===============================
 # STEP 1 – SAFE FILTER
-
+# ===============================
 def step1_strict_filter(products, query):
     if not products:
         return products
@@ -87,20 +86,20 @@ def step1_strict_filter(products, query):
     q_words = query.lower().split()
 
     BLOCK_WORDS = [
-    # accessories
-    "case", "cover", "back cover", "skin",
-    "tempered", "glass", "screen protector",
-    "charger", "cable", "adapter",
-    "holder", "stand", "mount",
+        # accessories
+        "case", "cover", "back cover", "skin",
+        "tempered", "glass", "screen protector",
+        "charger", "cable", "adapter",
+        "holder", "stand", "mount",
 
-    # resale / fake listings
-    "sell", "selling", "used", "second hand",
-    "refurbished", "pre owned", "exchange",
+        # resale / fake listings
+        "sell", "selling", "used", "second hand",
+        "refurbished", "pre owned", "exchange",
 
-    # non-phone junk
-    "sports", "jersey", "tshirt", "toy",
-    "dummy", "model", "poster", "display"
-]
+        # non-phone junk
+        "sports", "jersey", "tshirt", "toy",
+        "dummy", "model", "poster", "display"
+    ]
 
     filtered = []
 
@@ -112,11 +111,11 @@ def step1_strict_filter(products, query):
         # Remove obvious accessories
         if any(b in title for b in BLOCK_WORDS):
             continue
-# Must be an actual phone
-        PHONE_KEYWORDS = ["iphone", "mobile", "smartphone"]
 
+        # Must be an actual phone
+        PHONE_KEYWORDS = ["iphone", "mobile", "smartphone"]
         if not any(k in title for k in PHONE_KEYWORDS):
-           continue        
+            continue
 
         # SOFT match: at least ONE query word must appear
         if any(w in title for w in q_words):
@@ -126,8 +125,9 @@ def step1_strict_filter(products, query):
     return filtered if filtered else products
 
 
+# ===============================
 # STEP 2 – VARIANT GROUPING
-
+# ===============================
 def step2_group_variants(products):
     for p in products:
         title = p.get("title", "").lower()
@@ -143,8 +143,10 @@ def step2_group_variants(products):
 
     return products
 
-# STEP 3 – COMPARE & PICK BEST PRICE
 
+# ===============================
+# STEP 3 – COMPARE & PICK BEST PRICE
+# ===============================
 def normalize_title(title):
     t = title.lower()
     t = re.sub(r"\(.*?\)", "", t)
@@ -155,21 +157,17 @@ def normalize_title(title):
 
 def build_product_key(p):
     title = normalize_title(p.get("title", ""))
-
-    # Take first 5 meaningful words as key
     words = title.split()
     key = " ".join(words[:5])
-
     return key
+
 
 def clean_display_title(p):
     title = p.get("title", "").lower()
 
-    # detect iphone model number
     m = re.search(r"iphone\s*(\d+)", title)
     model = m.group(1) if m else ""
 
-    # detect variant
     if "pro max" in title:
         variant = "Pro Max"
     elif "pro" in title:
@@ -186,7 +184,6 @@ def clean_display_title(p):
 
 def step3_compare_products(products):
     grouped = {}
-  
 
     for p in products:
         key = build_product_key(p)
@@ -206,20 +203,13 @@ def step3_compare_products(products):
                 "offers": []
             }
 
-        
-        
-
-        #  append ONCE
         grouped[key]["offers"].append({
             "store": p.get("store", ""),
             "price": price,
             "link": p.get("link", ""),
-            
         })
-        
 
-
-    #  SORT & PRIORITIZE STORES
+    # SORT & PRIORITIZE STORES
     for product in grouped.values():
         preferred = []
         others = []
@@ -231,13 +221,11 @@ def step3_compare_products(products):
             else:
                 others.append(offer)
 
-        # sort each group by price
         preferred.sort(key=lambda x: x["price"])
         others.sort(key=lambda x: x["price"])
 
         product["offers"] = preferred + others
 
-        
         if product["offers"]:
             best = product["offers"][0]
             product["best_price"] = best["price"]
@@ -247,8 +235,9 @@ def step3_compare_products(products):
     return list(grouped.values())
 
 
+# ===============================
 # SERPAPI
-
+# ===============================
 def get_product_prices(query):
     cache_key = query.lower().strip()
     now = time.time()
@@ -274,7 +263,6 @@ def get_product_prices(query):
         for item in results.get("shopping_results", []):
             title = item.get("title", "")
 
-            
             link = (
                 item.get("link")
                 or item.get("product_link")
@@ -285,11 +273,9 @@ def get_product_prices(query):
                 )
             )
 
-           
             if link and link.startswith("/"):
                 link = "https://www.google.com" + link
 
-            
             if not link or not link.startswith("http"):
                 link = (
                     "https://www.google.com/search?tbm=shop&q="
@@ -312,13 +298,60 @@ def get_product_prices(query):
         return []
 
 
-# ROUTES
+# ===============================
+# RATE LIMITING
+# ===============================
+@app.before_request
+def rate_limit():
+    # Skip rate limiting for health check
+    if request.path == "/health":
+        return None
 
+    ip = get_client_ip()
+    now = time.time()
+
+    # Check if IP is currently blocked
+    if ip in blocked_ips:
+        blocked_until = blocked_ips[ip]
+        if now < blocked_until:
+            retry_after = int(blocked_until - now)
+            logging.warning(f"Blocked IP tried again: {ip}")
+            return (
+                f"<h2>Too Many Requests</h2>"
+                f"<p>You have been temporarily blocked. Try again in {retry_after // 60} min {retry_after % 60} sec.</p>",
+                429
+            )
+        else:
+            # Block expired — clear it
+            del blocked_ips[ip]
+            request_log[ip] = []
+
+    # Clean old requests outside the window
+    request_log[ip] = [t for t in request_log[ip] if now - t < WINDOW_SIZE]
+
+    # Check if over limit
+    if len(request_log[ip]) >= RATE_LIMIT:
+        blocked_ips[ip] = now + BLOCK_TIME
+        logging.warning(f"IP blocked for exceeding rate limit: {ip}")
+        return (
+            "<h2>Too Many Requests</h2>"
+            "<p>You have made too many requests. You are blocked for 15 minutes.</p>",
+            429
+        )
+
+    # Log this request
+    request_log[ip].append(now)
+    return None
+
+
+# ===============================
+# ROUTES
+# ===============================
 @app.route("/", methods=["GET", "POST"])
 def index():
     products = []
     variants = None
-    query = ""   # important for GET
+    query = ""
 
     if request.method == "POST":
         raw_query = request.form.get("product_query", "").strip()
@@ -335,22 +368,23 @@ def index():
             products = step3_compare_products(variants)
             products = sorted(products, key=lambda x: x["best_price"])
 
-    #  GET request just renders page (NO logic)
     return render_template(
         "index.html",
         products=products,
         variants=variants
     )
-    
+
+
 @app.route("/category/<category_name>", methods=["GET", "POST"])
 def category_page(category_name):
 
     category_rules = {
-    "mobiles": "mobile phone",
-    "laptops": "laptop",
-    "fruits": "fresh fruits",
-    "groceries": "grocery items",
-    "medicine": "medicine tablets online India"
+        "mobiles":   "mobile phone",
+        "laptops":   "laptop",
+        "fruits":    "fresh fruits",
+        "groceries": "grocery items",
+        # ── MEDICINE: broad default, specific on search ──
+        "medicine":  "medicine online India"
     }
 
     if category_name not in category_rules:
@@ -360,16 +394,19 @@ def category_page(category_name):
 
     if request.method == "POST":
         search_term = request.form.get("search", "").strip()
-        final_query = f"{search_term} {base_query}".strip()
+
+        # ── Medicine: use search term directly for precise results ──
+        if category_name == "medicine" and search_term:
+            final_query = f"{search_term} buy online India"
+        else:
+            final_query = f"{search_term} {base_query}".strip() if search_term else base_query
     else:
         final_query = base_query
 
     products = get_product_prices(final_query)
 
     if category_name == "mobiles":
-        # STEP 1
         products = step1_strict_filter(products, final_query)
-        # STEP 2
         products = step2_group_variants(products)
 
     products = sorted(products, key=extract_price)
@@ -380,9 +417,11 @@ def category_page(category_name):
         products=products
     )
 
+
 @app.route("/health")
 def health():
     return {"status": "ok"}
+
 
 # ===============================
 # SECURITY HEADERS
