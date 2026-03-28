@@ -392,6 +392,3 @@ def add_headers(resp):
     resp.headers["X-Frame-Options"] = "DENY"
     resp.headers["X-Content-Type-Options"] = "nosniff"
     return resp
-
-
-
