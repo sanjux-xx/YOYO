@@ -412,7 +412,7 @@
   {% if products %}
   <div class="mobile-cta fixed bottom-0 left-0 right-0 z-40 p-3 bg-white border-t border-gray-100 shadow-lg">
     {% set buy_link = products[0].best_link if products[0].best_link is defined else products[0].link if products[0].link is defined else '#' %}
-    {% set p0 = products[0].best_price if products[0].best_price is defined else products[0].price %}
+    {% set p0 = products[0].best_price if products[0].best_price is defined else products[0].price | replace('₹', '') | replace(',', '') | float %}
     <a href="{{ buy_link }}" target="_blank"
       class="block w-full text-center bg-gradient-to-r from-indigo-600 to-orange-500 text-white font-bold py-3.5 rounded-xl text-sm">
       🔥 View Best Deal — ₹{{ "{:,.0f}".format(p0) }}
