@@ -259,6 +259,7 @@ def get_merchant_link(serpapi_product_api_url):
         params = dict(urllib.parse.parse_qsl(parsed.query))
         params["api_key"] = os.getenv("SERPAPI_KEY")
         result = GoogleSearch(params).get_dict()
+        logging.info(f"serpapi error: {result.get('error', 'NO ERROR')}")
         logging.info(f"serpapi keys returned: {list(result.keys())}")
         logging.info(f"sellers: {result.get('sellers_results', 'NOT FOUND')}")
         sellers = result.get("sellers_results", {}).get("online_sellers", [])
@@ -302,30 +303,27 @@ def get_product_prices(query):
         products = []
 
         for item in results.get("shopping_results", []):
-            title = item.get("title", "")
+            title           = item.get("title", "")
+            product_api_url = item.get("serpapi_product_api", "")
 
-            # Try direct merchant links — no 2nd API call needed
-            link = ""
+            # Fallback link
+            link = (
+                item.get("link")
+                or item.get("product_link")
+                or ""
+            )
 
-            for key in ["link", "product_link", "shopping_link"]:
-                val = item.get(key, "")
-                if val and val.startswith("http") and "google.com" not in val:
-                    link = val
-                    break
-
-            if not link:
-                for offer in item.get("offers", []):
-                    offer_link = offer.get("link", "")
-                    if offer_link and offer_link.startswith("http") and "google.com" not in offer_link:
-                        link = offer_link
-                        break
+            # 2nd API call to get direct merchant URL
+            if product_api_url:
+                direct = get_merchant_link(product_api_url)
+                if direct:
+                    link = direct
 
             # Final fallback
-            if not link:
+            if not link or not link.startswith("http"):
                 link = (
-                    item.get("link")
-                    or item.get("product_link")
-                    or "https://www.google.com/search?tbm=shop&q=" + re.sub(r"\s+", "+", title)
+                    "https://www.google.com/search?tbm=shop&q="
+                    + re.sub(r"\s+", "+", title)
                 )
 
             logging.info(f"final link: {link[:80]}")
