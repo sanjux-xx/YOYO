@@ -263,6 +263,8 @@ def get_merchant_link(product_id):
             "api_key":    os.getenv("SERPAPI_KEY")
         }
         result = GoogleSearch(params).get_dict()
+        logging.info(f"serpapi keys returned: {list(result.keys())}")
+        logging.info(f"sellers: {result.get('sellers_results', 'NOT FOUND')}")
         sellers = result.get("sellers_results", {}).get("online_sellers", [])
         
         # Find trusted store first
