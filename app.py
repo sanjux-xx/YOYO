@@ -316,10 +316,10 @@ def get_product_prices(query):
 
             # Step 2 — always fetch direct merchant link via product_id
             if product_api_url:
-                logging.info(f"Fetching direct merchant link for: {title}")
-                direct = get_merchant_link(product_api_url)
-                if direct:
-                    link = direct
+             logging.info(f"product_api_url found: {product_api_url[:80]}")
+            direct = get_merchant_link(product_api_url)
+        else:
+            logging.info(f"NO product_api_url for: {title}")
 
             # Final fallback
             if not link or not link.startswith("http"):
