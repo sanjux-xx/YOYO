@@ -8,9 +8,32 @@ from collections import defaultdict
 
 
 TRUSTED_STORES = [
+    # E-commerce
     "amazon", "flipkart",
-    "reliance", "croma",
-    "tatacliq", "vijaysales"
+    "tatacliq", "vijaysales",
+    "myntra", "meesho",
+    "snapdeal", "shopsy",
+
+    # Electronics
+    "croma", "reliance digital",
+    "vijay sales", "ezone",
+
+    # Quick commerce
+    "blinkit", "zepto",
+    "swiggy instamart", "dunzo",
+    "bigbasket", "jiomart",
+    "instamart",
+
+    # Pharmacy
+    "1mg", "netmeds", "pharmeasy",
+    "apollo pharmacy", "medplus",
+
+    # Fashion
+    "ajio", "nykaa", "nykaafashion",
+
+    # Other
+    "boat", "noise", "samsung shop",
+    "apple", "mi store", "oneplus",
 ]
 
 # ===============================
@@ -228,6 +251,33 @@ def step3_compare_products(products):
 # ===============================
 # SERPAPI
 # ===============================
+def get_merchant_link(product_id):
+    """2nd API call to get direct merchant link from product ID"""
+    try:
+        params = {
+            "engine":     "google_product",
+            "product_id": product_id,
+            "api_key":    os.getenv("SERPAPI_KEY")
+        }
+        result = GoogleSearch(params).get_dict()
+        sellers = result.get("sellers_results", {}).get("online_sellers", [])
+        
+        # Find trusted store first
+        for seller in sellers:
+            store = seller.get("name", "").lower()
+            link  = seller.get("link", "")
+            if any(ts in store for ts in TRUSTED_STORES) and link:
+                return link
+        
+        # Fallback to first available seller
+        if sellers and sellers[0].get("link"):
+            return sellers[0]["link"]
+            
+    except Exception as e:
+        logging.error(f"Merchant link fetch error: {e}")
+    return ""
+
+
 def get_product_prices(query):
     cache_key = query.lower().strip()
     now = time.time()
@@ -238,12 +288,12 @@ def get_product_prices(query):
             return data
 
     params = {
-        "engine": "google_shopping",
-        "q": query,
+        "engine":   "google_shopping",
+        "q":        query,
         "location": "India",
-        "hl": "en",
-        "gl": "in",
-        "api_key": os.getenv("SERPAPI_KEY")
+        "hl":       "en",
+        "gl":       "in",
+        "api_key":  os.getenv("SERPAPI_KEY")
     }
 
     try:
@@ -251,21 +301,25 @@ def get_product_prices(query):
         products = []
 
         for item in results.get("shopping_results", []):
-            title = item.get("title", "")
+            title      = item.get("title", "")
+            product_id = item.get("product_id", "")
 
+            # Step 1 — get basic link
             link = (
                 item.get("link")
                 or item.get("product_link")
-                or (
-                    item.get("offers", [{}])[0].get("link")
-                    if item.get("offers")
-                    else ""
-                )
+                or (item.get("offers", [{}])[0].get("link") if item.get("offers") else "")
+                or ""
             )
 
-            if link and link.startswith("/"):
-                link = "https://www.google.com" + link
+            # Step 2 — always fetch direct merchant link via product_id
+            if product_id:
+                logging.info(f"Fetching direct merchant link for: {title}")
+                direct = get_merchant_link(product_id)
+                if direct:
+                    link = direct
 
+            # Final fallback
             if not link or not link.startswith("http"):
                 link = (
                     "https://www.google.com/search?tbm=shop&q="
@@ -277,7 +331,7 @@ def get_product_prices(query):
                 "price": item.get("price", ""),
                 "store": item.get("source", ""),
                 "image": item.get("thumbnail", ""),
-                "link": link
+                "link":  link
             })
 
         cache[cache_key] = (products, now)
