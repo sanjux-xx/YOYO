@@ -244,7 +244,7 @@ def step3_compare_products(products):
             product["best_price"] = best["price"]
             product["best_store"] = best["store"]
             product["best_link"] = best["link"]
-            logging.info(f"best_link: {best['link']}")  # ← ADD THIS LINE
+            
 
     return list(grouped.values())
 
@@ -252,34 +252,6 @@ def step3_compare_products(products):
 # ===============================
 # SERPAPI
 # ===============================
-def get_merchant_link(serpapi_product_api_url):
-    try:
-        import urllib.parse
-        parsed = urllib.parse.urlparse(serpapi_product_api_url)
-        params = dict(urllib.parse.parse_qsl(parsed.query))
-        params["api_key"] = os.getenv("SERPAPI_KEY")
-        result = GoogleSearch(params).get_dict()
-        logging.info(f"serpapi error: {result.get('error', 'NO ERROR')}")
-        logging.info(f"serpapi keys returned: {list(result.keys())}")
-        logging.info(f"sellers: {result.get('sellers_results', 'NOT FOUND')}")
-        sellers = result.get("sellers_results", {}).get("online_sellers", [])
-        
-        # Find trusted store first
-        for seller in sellers:
-            store = seller.get("name", "").lower()
-            link  = seller.get("link", "")
-            if any(ts in store for ts in TRUSTED_STORES) and link:
-                return link
-        
-        # Fallback to first available seller
-        if sellers and sellers[0].get("link"):
-            return sellers[0]["link"]
-            
-    except Exception as e:
-        logging.error(f"Merchant link fetch error: {e}")
-    return ""
-
-
 def get_product_prices(query):
     cache_key = query.lower().strip()
     now = time.time()
@@ -304,30 +276,11 @@ def get_product_prices(query):
 
         for item in results.get("shopping_results", []):
             title = item.get("title", "")
-            product_api_url = item.get("serpapi_product_api", "")
-            logging.info(f"product_api_url: {product_api_url[:50] if product_api_url else 'EMPTY'}")
-
-            # Fallback link
-            link = (
+            link  = (
                 item.get("link")
                 or item.get("product_link")
-                or ""
+                or "https://www.google.com/search?tbm=shop&q=" + re.sub(r"\s+", "+", title)
             )
-
-            # 2nd API call to get direct merchant URL
-            if product_api_url:
-                direct = get_merchant_link(product_api_url)
-                if direct:
-                    link = direct
-
-            # Final fallback
-            if not link or not link.startswith("http"):
-                link = (
-                    "https://www.google.com/search?tbm=shop&q="
-                    + re.sub(r"\s+", "+", title)
-                )
-
-            logging.info(f"final link: {link[:80]}")
 
             products.append({
                 "title": title,
@@ -343,7 +296,6 @@ def get_product_prices(query):
     except Exception as e:
         sentry_sdk.capture_exception(e)
         return []
-
 
 # ===============================
 # BLOCK PAGE HTML TEMPLATES
