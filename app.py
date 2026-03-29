@@ -303,8 +303,9 @@ def get_product_prices(query):
         products = []
 
         for item in results.get("shopping_results", []):
-            title           = item.get("title", "")
+            title = item.get("title", "")
             product_api_url = item.get("serpapi_product_api", "")
+            logging.info(f"product_api_url: {product_api_url[:50] if product_api_url else 'EMPTY'}")
 
             # Fallback link
             link = (
