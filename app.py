@@ -252,16 +252,12 @@ def step3_compare_products(products):
 # ===============================
 # SERPAPI
 # ===============================
-def get_merchant_link(product_id):
-    """2nd API call to get direct merchant link from product ID"""
+def get_merchant_link(serpapi_product_api_url):
     try:
-        params = {
-            "engine": "google_product",
-            "gl": "in",
-            "hl": "en",
-            "product_id": product_id,
-            "api_key":    os.getenv("SERPAPI_KEY")
-        }
+        import urllib.parse
+        parsed = urllib.parse.urlparse(serpapi_product_api_url)
+        params = dict(urllib.parse.parse_qsl(parsed.query))
+        params["api_key"] = os.getenv("SERPAPI_KEY")
         result = GoogleSearch(params).get_dict()
         logging.info(f"serpapi keys returned: {list(result.keys())}")
         logging.info(f"sellers: {result.get('sellers_results', 'NOT FOUND')}")
@@ -307,8 +303,8 @@ def get_product_prices(query):
 
         for item in results.get("shopping_results", []):
             title      = item.get("title", "")
-            product_id = item.get("product_id", "")
-            logging.info(f"title: {title} | product_id: {product_id}")  # ← ADD THIS LINE ONLY
+            product_api_url = item.get("serpapi_product_api", "")
+           
 
             # Step 1 — get basic link
             link = (
@@ -319,9 +315,9 @@ def get_product_prices(query):
             )
 
             # Step 2 — always fetch direct merchant link via product_id
-            if product_id:
+            if product_api_url:
                 logging.info(f"Fetching direct merchant link for: {title}")
-                direct = get_merchant_link(product_id)
+                direct = get_merchant_link(product_api_url)
                 if direct:
                     link = direct
 
