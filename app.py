@@ -244,6 +244,7 @@ def step3_compare_products(products):
             product["best_price"] = best["price"]
             product["best_store"] = best["store"]
             product["best_link"] = best["link"]
+            logging.info(f"best_link: {best['link']}")  # ← ADD THIS LINE
 
     return list(grouped.values())
 
