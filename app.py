@@ -565,6 +565,13 @@ def price_check():
 def health():
     return {"status": "ok"}
 
+@app.route("/sw.js")
+def sw():
+    return app.send_static_file("sw.js")
+
+@app.route("/manifest.json")
+def manifest():
+    return app.send_static_file("manifest.json")
 
 # ===============================
 # SECURITY HEADERS

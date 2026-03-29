@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f0c29"/>
+      <stop offset="50%" style="stop-color:#1e1b4b"/>
+      <stop offset="100%" style="stop-color:#0f172a"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4F46E5"/>
+      <stop offset="100%" style="stop-color:#7C3AED"/>
+    </linearGradient>
+    <linearGradient id="bolt" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F97316"/>
+      <stop offset="100%" style="stop-color:#EF4444"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="8" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="softglow">
+      <feGaussianBlur stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Dark background -->
+  <rect width="512" height="512" rx="130" fill="url(#bg)"/>
+
+  <!-- Glow orbs -->
+  <circle cx="130" cy="150" r="120" fill="#4F46E5" fill-opacity="0.18"/>
+  <circle cx="390" cy="370" r="100" fill="#F97316" fill-opacity="0.12"/>
+
+  <!-- Main pill/card shape -->
+  <rect x="80" y="160" width="352" height="200" rx="40" fill="url(#pill)" fill-opacity="0.15" stroke="#4F46E5" stroke-width="1.5" stroke-opacity="0.4"/>
+
+  <!-- CS monogram -->
+  <text x="256" y="295"
+        font-family="Arial Black, Arial, sans-serif"
+        font-weight="900"
+        font-size="160"
+        fill="white"
+        text-anchor="middle"
+        dominant-baseline="middle"
+        letter-spacing="-6"
+        filter="url(#glow)">CS</text>
+
+  <!-- Orange lightning bolt accent -->
+  <path d="M368 90 L345 158 L368 158 L332 235 L388 148 L362 148 L388 90 Z"
+        fill="url(#bolt)"
+        filter="url(#softglow)"
+        opacity="0.95"/>
+
+  <!-- Bottom subtle label -->
+  <text x="256" y="415"
+        font-family="Arial, sans-serif"
+        font-weight="600"
+        font-size="38"
+        fill="white"
+        fill-opacity="0.35"
+        text-anchor="middle"
+        letter-spacing="12">COSTSHOT</text>
+
+  <!-- Dot accent -->
+  <circle cx="256" cy="455" r="5" fill="#4F46E5" fill-opacity="0.6"/>
+</svg>
