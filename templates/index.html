@@ -498,6 +498,50 @@
     navigator.serviceWorker.register('/sw.js');
   }
 </script>
+<!-- PWA Install Banner -->
+<div id="pwa-banner" style="display:none" class="fixed bottom-20 left-4 right-4 z-50 bg-white rounded-2xl shadow-2xl p-4 flex items-center gap-3 border border-indigo-100">
+  <img src="/static/icons/icon-72.png" class="w-12 h-12 rounded-xl"/>
+  <div class="flex-1">
+    <div class="font-bold text-gray-900 text-sm">Install CostShot</div>
+    <div class="text-gray-500 text-xs">Add to home screen for best experience</div>
+  </div>
+  <button onclick="installPWA()" class="bg-indigo-600 text-white text-xs font-bold px-3 py-2 rounded-xl">Install</button>
+  <button onclick="dismissBanner()" class="text-gray-400 text-lg">✕</button>
+</div>
+
+<script>
+  let deferredPrompt;
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show banner only if not already installed
+    if (!window.matchMedia('(display-mode: standalone)').matches) {
+      document.getElementById('pwa-banner').style.display = 'flex';
+    }
+  });
+
+  function installPWA() {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then((result) => {
+      if (result.outcome === 'accepted') {
+        document.getElementById('pwa-banner').style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
+  }
+
+  function dismissBanner() {
+    document.getElementById('pwa-banner').style.display = 'none';
+    localStorage.setItem('pwa-dismissed', 'true');
+  }
+
+  // Don't show if user already dismissed
+  if (localStorage.getItem('pwa-dismissed')) {
+    document.getElementById('pwa-banner').style.display = 'none';
+  }
+</script>
 </body>
 </html>
 ```
