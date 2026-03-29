@@ -303,6 +303,7 @@ def get_product_prices(query):
         for item in results.get("shopping_results", []):
             title      = item.get("title", "")
             product_id = item.get("product_id", "")
+            logging.info(f"title: {title} | product_id: {product_id}")  # ← ADD THIS LINE ONLY
 
             # Step 1 — get basic link
             link = (
