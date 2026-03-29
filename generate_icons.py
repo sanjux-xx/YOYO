@@ -1,4 +1,4 @@
-from PIL import Image, ImageDraw
+from PIL import Image
 import os
 
 SIZES = [72, 96, 128, 144, 152, 180, 192, 512]
@@ -6,12 +6,11 @@ OUTPUT_DIR = "static/icons"
 
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+img = Image.open("static/images/logo.png").convert("RGBA")
+
 for size in SIZES:
-    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
-    draw = ImageDraw.Draw(img)
-    draw.rounded_rectangle([0, 0, size, size], radius=size//5, fill=(79, 70, 229, 255))
-    path = os.path.join(OUTPUT_DIR, f"icon-{size}.png")
-    img.save(path)
+    resized = img.resize((size, size), Image.LANCZOS)
+    resized.save(os.path.join(OUTPUT_DIR, f"icon-{size}.png"))
     print(f"✅ icon-{size}.png")
 
 print("Done!")
