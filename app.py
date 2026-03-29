@@ -256,7 +256,9 @@ def get_merchant_link(product_id):
     """2nd API call to get direct merchant link from product ID"""
     try:
         params = {
-            "engine":     "google_product",
+            "engine": "google_shopping_product",
+            "country": "in",
+            "hl": "en",
             "product_id": product_id,
             "api_key":    os.getenv("SERPAPI_KEY")
         }
