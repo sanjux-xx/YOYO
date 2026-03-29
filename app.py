@@ -302,31 +302,33 @@ def get_product_prices(query):
         products = []
 
         for item in results.get("shopping_results", []):
-            title      = item.get("title", "")
-            product_api_url = item.get("serpapi_product_api", "")
-           
+            title = item.get("title", "")
 
-            # Step 1 — get basic link
-            link = (
-                item.get("link")
-                or item.get("product_link")
-                or (item.get("offers", [{}])[0].get("link") if item.get("offers") else "")
-                or ""
-            )
+            # Try direct merchant links — no 2nd API call needed
+            link = ""
 
-            # Step 2 — always fetch direct merchant link via product_id
-            if product_api_url:
-             logging.info(f"product_api_url found: {product_api_url[:80]}")
-            direct = get_merchant_link(product_api_url)
-        else:
-            logging.info(f"NO product_api_url for: {title}")
+            for key in ["link", "product_link", "shopping_link"]:
+                val = item.get(key, "")
+                if val and val.startswith("http") and "google.com" not in val:
+                    link = val
+                    break
+
+            if not link:
+                for offer in item.get("offers", []):
+                    offer_link = offer.get("link", "")
+                    if offer_link and offer_link.startswith("http") and "google.com" not in offer_link:
+                        link = offer_link
+                        break
 
             # Final fallback
-            if not link or not link.startswith("http"):
+            if not link:
                 link = (
-                    "https://www.google.com/search?tbm=shop&q="
-                    + re.sub(r"\s+", "+", title)
+                    item.get("link")
+                    or item.get("product_link")
+                    or "https://www.google.com/search?tbm=shop&q=" + re.sub(r"\s+", "+", title)
                 )
+
+            logging.info(f"final link: {link[:80]}")
 
             products.append({
                 "title": title,
