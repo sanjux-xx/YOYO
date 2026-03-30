@@ -396,7 +396,7 @@
       </div>
     </div>
   </footer>
-
+<script>
  // Animate category cards on scroll
 const catObserver = new IntersectionObserver((entries) => {
   entries.forEach((e, i) => {
@@ -416,7 +416,7 @@ document.querySelectorAll('.cat-card').forEach(card => {
   card.style.transition = 'opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1)';
   catObserver.observe(card);
 });
-
+</script>
   <script>
     const heroSearch = document.getElementById('hero-search');
     if (heroSearch && !heroSearch.closest('form').querySelector('input[value]')) {
