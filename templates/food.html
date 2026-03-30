@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" style="height:100%;">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>Food Price Comparison — CostShot</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
@@ -29,7 +29,7 @@
     ::-webkit-scrollbar-thumb { background:#F97316; border-radius:4px; }
   </style>
 </head>
-<body class="antialiased" style="background:#111827; min-height:100vh;">
+<body style="min-height:100%; display:flex; flex-direction:column;">
 
   <!-- NAVBAR -->
   <nav class="navbar-glass fixed top-0 left-0 right-0 z-50">
@@ -154,7 +154,7 @@
   </section>
 
   <!-- FOOTER -->
-  <footer class="bg-gray-900 text-gray-400 py-8 px-4">
+  <footer class="bg-gray-900 text-gray-400 py-8 px-4 mt-auto">
     <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4 text-xs">
       <div class="flex items-center gap-2">
         <div class="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" style="background:#f9fafb; min-height:100vh;">
+<html lang="en" style="height:100%;">
 <head>
   <link rel="manifest" href="/manifest.json"/>
 <meta name="theme-color" content="#4F46E5"/>
@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-title" content="CostShot"/>
 <link rel="apple-touch-icon" href="/static/icons/icon-180.png"/>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
   <title>CostShot — India's Smartest Price Comparison</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
@@ -89,7 +89,7 @@
   <script src="/static/notifications.js" defer></script>
 </head>
 
-<body class="text-gray-900 antialiased" style="background:#f9fafb; min-height:100vh;">
+<body style="min-height:100%; display:flex; flex-direction:column;">
 
   <!-- STICKY NAVBAR -->
   <nav class="navbar-glass fixed top-0 left-0 right-0 z-50">
@@ -355,7 +355,7 @@
   </section>
 
   <!-- FOOTER -->
-  <footer class="bg-gray-900 text-gray-400 py-12 px-4">
+  <footer class="bg-gray-900 text-gray-400 py-12 px-4 mt-auto">
     <div class="max-w-7xl mx-auto">
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-10">
         <div>
