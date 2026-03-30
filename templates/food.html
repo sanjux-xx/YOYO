@@ -175,6 +175,14 @@
   html, body { height: 100%; background: #111827; }
 </style>
 <script>
+  // Force hero elements visible
+  document.querySelectorAll('.fade-up').forEach(el => {
+    const delay = parseFloat(getComputedStyle(el).animationDelay) * 1000 || 0;
+    setTimeout(() => {
+      el.style.opacity = '1';
+    }, delay + 600);
+  });
+
   // Animate brand cards on scroll
   const brandObserver = new IntersectionObserver((entries) => {
     entries.forEach((e, i) => {
@@ -187,16 +195,6 @@
       }
     });
   }, { threshold: 0.1 });
-
-document.querySelectorAll('.brand-card').forEach(card => {
-    const rect = card.getBoundingClientRect();
-    // Force hero elements visible
-  document.querySelectorAll('.fade-up').forEach(el => {
-    const delay = parseFloat(getComputedStyle(el).animationDelay) * 1000 || 0;
-    setTimeout(() => {
-      el.style.opacity = '1';
-    }, delay + 600);
-  });
 
   document.querySelectorAll('.brand-card').forEach(card => {
     const rect = card.getBoundingClientRect();
