@@ -397,7 +397,25 @@
     </div>
   </footer>
 
- 
+ // Animate category cards on scroll
+const catObserver = new IntersectionObserver((entries) => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) {
+      setTimeout(() => {
+        e.target.style.opacity = '1';
+        e.target.style.transform = 'translateY(0) scale(1)';
+      }, i * 80);
+      catObserver.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.1 });
+
+document.querySelectorAll('.cat-card').forEach(card => {
+  card.style.opacity = '0';
+  card.style.transform = 'translateY(30px) scale(0.95)';
+  card.style.transition = 'opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1)';
+  catObserver.observe(card);
+});
 
   <script>
     const heroSearch = document.getElementById('hero-search');
