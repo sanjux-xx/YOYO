@@ -188,11 +188,14 @@
     });
   }, { threshold: 0.1 });
 
-  document.querySelectorAll('.brand-card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(30px) scale(0.95)';
-    card.style.transition = 'opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1)';
-    brandObserver.observe(card);
+document.querySelectorAll('.brand-card').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    if (rect.top > window.innerHeight) {
+      card.style.opacity = '0';
+      card.style.transform = 'translateY(30px) scale(0.95)';
+      card.style.transition = 'opacity 0.4s ease, transform 0.4s cubic-bezier(.34,1.56,.64,1)';
+      brandObserver.observe(card);
+    }
   });
 </script>
 </body>
