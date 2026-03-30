@@ -190,6 +190,16 @@
 
 document.querySelectorAll('.brand-card').forEach(card => {
     const rect = card.getBoundingClientRect();
+    // Force hero elements visible
+  document.querySelectorAll('.fade-up').forEach(el => {
+    const delay = parseFloat(getComputedStyle(el).animationDelay) * 1000 || 0;
+    setTimeout(() => {
+      el.style.opacity = '1';
+    }, delay + 600);
+  });
+
+  document.querySelectorAll('.brand-card').forEach(card => {
+    const rect = card.getBoundingClientRect();
     if (rect.top > window.innerHeight) {
       card.style.opacity = '0';
       card.style.transform = 'translateY(30px) scale(0.95)';
