@@ -4,6 +4,7 @@ import os
 import re
 import time
 import logging
+import socket
 
 # ===============================
 # BLUEPRINT
@@ -298,7 +299,9 @@ def get_prices_for_item(brand_key, item_name):
     }
 
     # ── Try SerpAPI for live prices + real links ──
+    _prev_timeout = socket.getdefaulttimeout()
     try:
+        socket.setdefaulttimeout(20)
         params = {
             "engine":   "google_shopping",
             "q":        f"{item_name} {brand_name} price India",
@@ -339,6 +342,8 @@ def get_prices_for_item(brand_key, item_name):
 
     except Exception as e:
         logging.error(f"SerpAPI food error: {e}")
+    finally:
+        socket.setdefaulttimeout(_prev_timeout)
 
     result = {"prices": prices, "buy_links": buy_links}
     food_cache[cache_key] = (result, now)
