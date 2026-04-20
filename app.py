@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request
-from serpapi import GoogleSearch
+import serpapi
 import re
 import os
 import time
@@ -262,11 +262,11 @@ def get_product_prices(query):
         "location": "India",
         "hl": "en",
         "gl": "in",
-        "api_key": os.getenv("SERPAPI_KEY")
     }
 
     try:
-        results = GoogleSearch(params).get_dict()
+        client = serpapi.Client(api_key=os.getenv("SERPAPI_KEY"), timeout=25)
+        results = client.search(params)
         products = []
 
         for item in results.get("shopping_results", []):
