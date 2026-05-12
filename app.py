@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request
+from flask_cors import CORS
 from serpapi import GoogleSearch
 import re
 import os
@@ -58,6 +59,11 @@ from food_backend import food_bp
 # APP
 # ===============================
 app = Flask(__name__)
+CORS(app, resources={r"/api/*": {"origins": [
+    "https://*.lovable.app",
+    "https://productcamparison.live",
+    "http://localhost:5173",
+]}})
 app.register_blueprint(food_bp)
 
 # ===============================
@@ -433,6 +439,11 @@ def index():
         products=products,
         variants=variants
     )
+    @app.route("/api/search")
+    def api_search():
+    q = request.args.get("q", "").strip()
+    products = <call the same function index() uses to build its products list>
+    return jsonify({"query": q, "products": products})
 
 
 # ===============================
@@ -488,6 +499,9 @@ def medicine_filter(products, query):
     return filtered if filtered else products
 
 
+
+
+
 # ===============================
 # CATEGORY ROUTE
 # ===============================
@@ -532,6 +546,11 @@ def category_page(category_name):
         products=products
     )
 
+@app.route("/api/category/<name>")
+def api_category(name):
+    q = request.args.get("q", "").strip()
+    products = <call the same function category_page() uses>
+    return jsonify({"category": name, "products": products})
 
 # ===============================
 # API ROUTE
