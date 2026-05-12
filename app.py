@@ -1,5 +1,4 @@
-from flask import Flask, render_template, request, jsonify
-from flask_cors import CORS
+from flask import Flask, render_template, request
 from serpapi import GoogleSearch
 import re
 import os
@@ -59,11 +58,6 @@ from food_backend import food_bp
 # APP
 # ===============================
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": [
-    "https://*.lovable.app",
-    "https://productcamparison.live",
-    "http://localhost:5173",
-]}})
 app.register_blueprint(food_bp)
 
 # ===============================
@@ -277,15 +271,9 @@ def get_product_prices(query):
     }
 
     try:
-        import socket
-        socket.setdefaulttimeout(10)
-        try:
-            results = GoogleSearch(params).get_dict()
-        finally:
-            socket.setdefaulttimeout(None)
-            
+        results = GoogleSearch(params).get_dict()
         products = []
-        
+
         for item in results.get("shopping_results", []):
             title = item.get("title", "")
             link  = (
@@ -305,7 +293,7 @@ def get_product_prices(query):
         cache[cache_key] = (products, now)
         return products
 
-    except BaseException as e:
+    except Exception as e:
         sentry_sdk.capture_exception(e)
         return []
 
@@ -447,28 +435,6 @@ def index():
     )
 
 
-@app.route("/api/search")
-def api_search():
-    q = request.args.get("q", "").strip()
-    
-    products = []
-    
-    if is_valid_query(q):
-        raw = get_product_prices(q)
-        
-        filtered = step1_strict_filter(raw, q)
-        if not filtered:
-            filtered = raw
-        
-        variants = step2_group_variants(filtered)
-        products = step3_compare_products(variants)
-        products = sorted(products, key=lambda x: x["best_price"])
-    
-    return jsonify({"query": q, "products": products})
-
-
-
-
 # ===============================
 # MEDICINE FILTER
 # ===============================
@@ -522,9 +488,6 @@ def medicine_filter(products, query):
     return filtered if filtered else products
 
 
-
-
-
 # ===============================
 # CATEGORY ROUTE
 # ===============================
@@ -569,37 +532,6 @@ def category_page(category_name):
         products=products
     )
 
-@app.route("/api/category/<name>")
-def api_category(name):
-    q = request.args.get("q", "").strip()
-    
-    products = []
-    
-    category_rules = {
-        "mobiles":   "mobile phone",
-        "laptops":   "laptop",
-        "fruits":    "fresh fruits",
-        "groceries": "grocery items",
-        "medicine":  "medicine online India"
-    }
-
-    if name not in category_rules:
-        return jsonify({"category": name, "products": []})
-
-    base_query = category_rules[name]
-    final_query = f"{q} {base_query}".strip() if q else base_query
-
-    products = get_product_prices(final_query)
-
-    if name == "mobiles":
-        products = step1_strict_filter(products, final_query)
-        products = step2_group_variants(products)
-    elif name == "medicine":
-        products = medicine_filter(products, final_query)
-
-    products = sorted(products, key=extract_price)
-    
-    return jsonify({"category": name, "products": products})
 
 # ===============================
 # API ROUTE

@@ -4,4 +4,3 @@ google-search-results
 sentry-sdk[flask]
 gunicorn
 serpapi
-flask-cors
