@@ -1,0 +1,144 @@
+# YOYO — Smart Price Comparison App 🛒
+
+YOYO is an open-source price comparison web app built with **Python (Flask)** and powered by the **[SerpApi Google Shopping API](https://serpapi.com/)**. It helps users find the best prices for phones, laptops, groceries, and more — pulling live results from trusted Indian retailers like Amazon, Flipkart, Croma, and Tata CLiQ.
+
+---
+
+## ✨ Features
+
+- 🔍 **Live product search** via SerpApi's Google Shopping engine
+- 📱 **Smart mobile phone filtering** — strips accessories, resale listings, and irrelevant junk
+- 🏷️ **Variant grouping** — groups iPhone Pro, Pro Max, Mini, and Base models separately
+- 💸 **Best-price ranking** — prioritizes trusted stores and sorts by price
+- 🛡️ **Rate limiting & IP blocking** to prevent abuse
+- ⚡ **In-memory caching** (20-minute TTL) to reduce API calls
+- 🐞 **Sentry integration** for error monitoring
+- 🍎 **Food/grocery category** powered by a dedicated blueprint (`food_backend.py`)
+- 🔒 **Security headers** (X-Frame-Options, X-Content-Type-Options)
+
+---
+
+## 🏗️ Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Backend | Python 3, Flask |
+| Search API | [SerpApi](https://serpapi.com/) (Google Shopping) |
+| Error Tracking | Sentry SDK |
+| Deployment | Heroku (Procfile included) |
+| Frontend | HTML/Jinja2 templates |
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Python 3.8+
+- A [SerpApi](https://serpapi.com/) API key
+- (Optional) A Sentry DSN for error monitoring
+
+### Installation
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/sanjux-xx/YOYO.git
+cd YOYO
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Set environment variables
+export SERPAPI_KEY="your_serpapi_key_here"
+export SENTRY_DSN="your_sentry_dsn_here"   # optional
+
+# 4. Run the app
+python app.py
+```
+
+Then open [http://localhost:5000](http://localhost:5000) in your browser.
+
+---
+
+## 🌐 Deployment (Heroku)
+
+```bash
+heroku create
+heroku config:set SERPAPI_KEY=your_key_here
+heroku config:set SENTRY_DSN=your_dsn_here
+git push heroku main
+```
+
+The `Procfile` is already configured for Heroku deployment.
+
+---
+
+## 📁 Project Structure
+
+```
+YOYO/
+├── app.py              # Main Flask app — routes, filtering, SerpApi logic
+├── food_backend.py     # Blueprint for food/grocery category
+├── requirements.txt    # Python dependencies
+├── Procfile            # Heroku process config
+├── templates/          # Jinja2 HTML templates
+│   └── index.html
+│   └── category.html
+└── static/
+    └── images/         # Static assets
+```
+
+---
+
+## 🔑 Environment Variables
+
+| Variable | Required | Description |
+|---|---|---|
+| `SERPAPI_KEY` | ✅ Yes | Your SerpApi API key |
+| `SENTRY_DSN` | ❌ Optional | Sentry project DSN for error tracking |
+
+---
+
+## 🛍️ Supported Categories
+
+| URL | Category |
+|---|---|
+| `/` | General product search |
+| `/category/mobiles` | Mobile phones |
+| `/category/laptops` | Laptops |
+| `/category/fruits` | Fresh fruits |
+| `/category/groceries` | Grocery items |
+
+---
+
+## 🙏 Powered By
+
+Search results are powered by **[SerpApi](https://serpapi.com/)** — a real-time SERP API that provides structured Google Shopping data. This project uses SerpApi under their [Open-Source Sponsorship Program](https://serpapi.com/open-source-sponsorship).
+
+> To claim free SerpApi credits for your own open-source project, link to [serpapi.com](https://serpapi.com/) in your public repository and submit a request via their [support page](https://serpapi.com/contact).
+
+---
+
+## 🤝 Contributing
+
+Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change.
+
+1. Fork the repo
+2. Create your feature branch: `git checkout -b feature/your-feature`
+3. Commit your changes: `git commit -m 'Add your feature'`
+4. Push to the branch: `git push origin feature/your-feature`
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is open source. See [LICENSE](LICENSE) for details.
+
+---
+
+## 🔗 Links
+
+- 🔎 [SerpApi](https://serpapi.com/) — Search API powering this project
+- 📦 [Flask](https://flask.palletsprojects.com/) — Web framework
+- 🐞 [Sentry](https://sentry.io/) — Error monitoring
